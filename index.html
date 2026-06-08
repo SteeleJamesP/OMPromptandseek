@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prompt & Seek — AI Scavenger Hunt</title>
+<title>Prompt &amp; Seek — AI Scavenger Hunt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -219,7 +219,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="divider"></div>
       <div class="sidebar-title">Deployed URL</div>
       <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:10px">QR codes append <code style="color:var(--accent2)">?id=ID</code> to this URL.</div>
-      <input class="field-input" id="base-url-input" type="text" placeholder="https://steelejamesp.github.io/OMPromptandseek" value="https://steelejamesp.github.io/OMPromptandseek" oninput="renderEditor()">
+      <input class="field-input" id="base-url-input" type="text" placeholder="https://steelejamesp.github.io/OMPrompt-and-Seek" value="https://steelejamesp.github.io/OMPrompt-and-Seek" oninput="renderEditor()">
       <div style="margin-top:12px">
         <button class="btn btn-secondary" style="width:100%;font-size:10px" onclick="adminLogout()">🔒 Lock Admin</button>
       </div>
@@ -263,6 +263,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <script>
 var ADMIN_PW = 'Mrmeowmeowface';
 var adminUnlocked = false;
+var activeRedirectInterval = null;
 
 var DEFAULT_REAL = [
   {id:'r1',type:'real',name:'Clue 1',location:'Break Room',
@@ -293,7 +294,7 @@ var DEFAULT_REAL = [
    prompt:'You are a nature documentary narrator in the style of David Attenborough. Describe in one paragraph a sacred corner of the modern office ecosystem where desperate humans migrate during the 3pm energy crash, driven by ancient biological instincts and sheer boredom. The location hoards treasures of questionable nutritional value, and yet the creatures return to it daily without fail. Do not name the location. Respond in exactly one paragraph, no more.',
    hint:'Answer points to: Snack Drawer / Vending Machine'},
   {id:'r10',type:'real',name:'Clue 10',location:'HR Office',
-   prompt:'No cap, slay this prompt fr fr. You are a Gen Alpha AI that only speaks in the most unhinged brainrot slang. Describe the most sus, lowkey scary office in the whole building — the one that\'s giving "we need to talk" energy, where the humans go when they\'re about to get their whole vibe checked by the higher-ups. The place that\'s rent free in everyone\'s head the moment their manager says "do you have a minute." Bussin with paperwork and policies. Don\'t say the name of the room. Respond in exactly one paragraph, no more.',
+   prompt:"No cap, slay this prompt fr fr. You are a Gen Alpha AI that only speaks in the most unhinged brainrot slang. Describe the most sus, lowkey scary office in the whole building — the one that's giving \"we need to talk\" energy, where the humans go when they're about to get their whole vibe checked by the higher-ups. The place that's rent free in everyone's head the moment their manager says \"do you have a minute.\" Bussin with paperwork and policies. Don't say the name of the room. Respond in exactly one paragraph, no more.",
    hint:'Answer points to: HR Office'},
   {id:'r11',type:'real',name:'Clue 11 (FINAL)',location:'Renaissance Hotel Bushes',
    prompt:'Hear ye, hear ye, brave wanderer. Thou hast traversed the treacherous halls of the corporate kingdom, outwitted the machines, and survived the vending machine at 3pm. But thy quest is not yet complete. The ancient scrolls speak of a mystical creature — a small metal being of great wisdom — hidden amongst the enchanted shrubbery of a grand castle nearby. This castle bears a name of rebirth and grandeur, a place where knights once feasted and bards once sang. Venture forth beyond the castle walls, find the sacred bushes that guard its entrance, and claim thy prize. The Unibot awaits thee, noble champion. Respond in exactly one paragraph, no more.',
@@ -310,7 +311,7 @@ var DEFAULT_DECOYS = [
   {id:'d7',type:'decoy',name:'Decoy: Fake Winner 2',subtype:'fake-win',trollMsg:'CONGRATULATIONS CHAMPION!',trollSub:'Lol no. This is a decoy. The real finish line is still waiting for someone smarter than you. (We believe in you though.)',gifUrl:''},
   {id:'d8',type:'decoy',name:'Decoy: Fake Winner 3',subtype:'fake-win',trollMsg:'FIRST PLACE!',trollSub:'Bold of you to assume it would be this easy. The Unibot is still hidden somewhere, laughing at you. Go find it.',gifUrl:''},
   {id:'d9',type:'decoy',name:'Decoy: Fake Winner 4',subtype:'fake-win',trollMsg:'THE HUNT IS OVER!',trollSub:'It is not. Not even close. Nice hustle though. Back to it.',gifUrl:''},
-  {id:'d10',type:'decoy',name:'Decoy: Loop Trap 1',subtype:'loop',trollMsg:'OH, THIS AGAIN.',trollSub:'You found a loop. A classic. The AI predicted you would end up here. It wasn\'t impressed. Keep moving.',gifUrl:''},
+  {id:'d10',type:'decoy',name:'Decoy: Loop Trap 1',subtype:'loop',trollMsg:'OH, THIS AGAIN.',trollSub:"You found a loop. A classic. The AI predicted you would end up here. It wasn't impressed. Keep moving.",gifUrl:''},
   {id:'d11',type:'decoy',name:'Decoy: Loop Trap 2',subtype:'loop',trollMsg:'STILL HERE?',trollSub:'This QR code goes nowhere. Well, it goes back. Which is forward if you think about it. The AI thinks you should stop scanning random walls.',gifUrl:''},
   {id:'d12',type:'decoy',name:'Decoy: Loop Trap 3',subtype:'loop',trollMsg:'INFINITE LOOP DETECTED.',trollSub:'Error 418: You are a teapot. This clue does not exist in the way you think it does. Please redirect your biological CPU back to a real clue.',gifUrl:''},
   {id:'d13',type:'decoy',name:'Decoy: Loop Trap 4',subtype:'loop',trollMsg:'YOU HAVE BEEN HERE BEFORE.',trollSub:'The matrix has you. Or maybe you just keep scanning everything on the wall hoping for the best. Respectable strategy. Wrong result. Go back.',gifUrl:''},
@@ -349,7 +350,6 @@ try {
   var saved = localStorage.getItem('ps_v3');
   if(saved) {
     var parsed = JSON.parse(saved);
-    // Merge: always keep hardcoded defaults, append any extra items added via admin
     var defaultIds = {};
     DEFAULT_REAL.concat(DEFAULT_DECOYS).concat(DEFAULT_GIFS).forEach(function(c){ defaultIds[c.id] = true; });
     var extras = parsed.filter(function(c){ return !defaultIds[c.id]; });
@@ -384,9 +384,9 @@ function getBaseUrl() {
 // PASSWORD
 function attemptAdmin() {
   if(adminUnlocked) { showAdmin(); return; }
-  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active');});
   document.getElementById('view-pw').classList.add('active');
-  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active');});
   document.querySelectorAll('.tab')[1].classList.add('active');
   setTimeout(function(){ var i=document.getElementById('pw-input'); if(i) i.focus(); },100);
 }
@@ -403,9 +403,9 @@ function checkPw() {
   }
 }
 function showAdmin() {
-  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active');});
   document.getElementById('view-admin').classList.add('active');
-  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active');});
   document.querySelectorAll('.tab')[1].classList.add('active');
   renderSidebar();
 }
@@ -414,9 +414,9 @@ function adminLogout() { adminUnlocked = false; switchView('hunt'); }
 // VIEWS
 function switchView(v) {
   if(v==='admin') { attemptAdmin(); return; }
-  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active');});
   document.getElementById('view-' + v).classList.add('active');
-  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active');});
   document.querySelectorAll('.tab')[0].classList.add('active');
   if(v==='hunt') renderHuntView();
 }
@@ -435,7 +435,7 @@ function renderHuntView() {
 }
 
 function renderWaiting(el) {
-  el.innerHTML = '<div class="waiting-screen"><span class="waiting-bot">🤖</span><div class="waiting-title">The hunt is<br><em>on.</em></div><div class="waiting-sub">Find a QR code hidden somewhere in the office, scan it, and your AI prompt will appear here.</div><div class="scan-indicator"><span class="pulse-dot"></span> Waiting for a QR scan...</div></div>';
+  el.innerHTML = '<div class="waiting-screen"><span class="waiting-bot">🤖</span><div class="waiting-title">The hunt is<br><em>on.</em></div><div class="waiting-sub">Was this site AI generated? Probably. I\'m busy cause y\'all submit a lot of tickets. Anyways find a QR code hidden somewhere in the office, scan it, and your AI prompt will appear here. Good Luck!</div><div class="scan-indicator"><span class="pulse-dot"></span> Waiting for a QR scan...</div></div>';
 }
 function renderUnknown(el) {
   el.innerHTML = '<div class="waiting-screen"><span style="font-size:60px;display:block;margin-bottom:16px">❓</span><div class="waiting-title">Unknown <em>signal.</em></div><div class="waiting-sub">This QR code doesn\'t match any clue. Check with your hunt organizer.</div></div>';
@@ -462,81 +462,106 @@ function renderRealClue(el, c) {
     '</div>';
 }
 
+// ── DECOY — fixed: no inline <script>, redirect handled via startRedirect() ──
 function renderDecoy(el, c) {
   var subtype = c.subtype || 'loop';
   var embedUrl = fixGifUrl(c.gifUrl);
-  var gifHtml = embedUrl ? '<div class="gif-iframe-wrap" style="max-width:400px;margin:0 auto 20px"><iframe src="' + escHtml(embedUrl) + '" class="gif-iframe" frameborder="0" allowfullscreen></iframe></div>' : '';
-  var captionHtml = c.caption ? '<div class="gif-caption" style="margin-bottom:20px;max-width:460px;margin-left:auto;margin-right:auto">' + escHtml(c.caption) + '</div>' : '';
+  var gifHtml = embedUrl
+    ? '<div class="gif-iframe-wrap" style="max-width:400px;margin:0 auto 20px"><iframe src="' + escHtml(embedUrl) + '" class="gif-iframe" frameborder="0" allowfullscreen></iframe></div>'
+    : '';
+  var captionHtml = c.caption
+    ? '<div class="gif-caption" style="margin-bottom:20px;max-width:460px;margin-left:auto;margin-right:auto">' + escHtml(c.caption) + '</div>'
+    : '';
 
-  // Pick randomly from first 5 real clues only
   var reals = getRealClues();
   var pool = reals.slice(0, 5);
   var target = pool.length ? pool[Math.floor(Math.random() * pool.length)] : reals[0];
-  var url = getBaseUrl() + '?id=' + (target ? target.id : 'r1');
+  var redirectUrl = getBaseUrl() + '?id=' + (target ? target.id : 'r1');
 
-  var redirectHtml = '<div class="redirect-bar">' +
-    '<div class="redirect-label">Redirecting you back to the hunt in</div>' +
-    '<div class="redirect-countdown" id="redir-count">10</div>' +
-    '<div class="redirect-msg">Nice try. Get back to it →</div></div>' +
-    '<button class="redirect-btn" onclick="window.location.href=\'' + url + '\'">Take Me Back Now →</button>' +
-    '<script>var _rc=10;var _ri=setInterval(function(){_rc--;var el=document.getElementById("redir-count");if(el)el.textContent=_rc;if(_rc<=0){clearInterval(_ri);window.location.href="' + url + '";}},1000);<\/script>';
+  var redirectHtml =
+    '<div class="redirect-bar">' +
+      '<div class="redirect-label">Redirecting you back to the hunt in</div>' +
+      '<div class="redirect-countdown" id="redir-count">10</div>' +
+      '<div class="redirect-msg">Nice try. Get back to it →</div>' +
+    '</div>' +
+    '<button class="redirect-btn" id="redir-btn">Take Me Back Now →</button>';
 
   if(subtype === 'phish') {
-    el.innerHTML = '<div class="decoy-page">' +
-      captionHtml +
-      '<div class="phish-card" id="phish-form">' +
-        '<div class="phish-logo">🔒 CorpPortal</div>' +
-        '<div class="phish-tagline">Please verify your identity to continue</div>' +
-        '<label class="phish-label">Email Address</label>' +
-        '<input class="phish-input" type="email" placeholder="you@company.com">' +
-        '<label class="phish-label">Password</label>' +
-        '<input class="phish-input" type="password" placeholder="Enter your password">' +
-        '<button class="phish-btn" onclick="triggerPhish()">Sign In →</button>' +
-      '</div>' +
-      '<div id="phish-reveal" style="display:none">' +
-        gifHtml +
-        '<div class="decoy-troll phish">' + escHtml(c.trollMsg||'YOU JUST GOT PHISHED.') + '</div>' +
+    el.innerHTML =
+      '<div class="decoy-page">' +
+        captionHtml +
+        '<div class="phish-card" id="phish-form">' +
+          '<div class="phish-logo">🔒 CorpPortal</div>' +
+          '<div class="phish-tagline">Please verify your identity to continue</div>' +
+          '<label class="phish-label">Email Address</label>' +
+          '<input class="phish-input" type="email" placeholder="you@company.com">' +
+          '<label class="phish-label">Password</label>' +
+          '<input class="phish-input" type="password" placeholder="Enter your password">' +
+          '<button class="phish-btn" id="phish-submit-btn">Sign In →</button>' +
+        '</div>' +
+        '<div id="phish-reveal" style="display:none">' +
+          gifHtml +
+          '<div class="decoy-troll phish">' + escHtml(c.trollMsg||'YOU JUST GOT PHISHED.') + '</div>' +
+          '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
+          redirectHtml +
+        '</div>' +
+      '</div>';
+    document.getElementById('phish-submit-btn').addEventListener('click', function() {
+      document.getElementById('phish-form').style.display = 'none';
+      document.getElementById('phish-reveal').style.display = 'block';
+      startRedirect(redirectUrl);
+    });
+  } else if(subtype === 'fake-win') {
+    el.innerHTML =
+      '<div class="decoy-page"><div class="confetti-row">🎉🏆🎊🥇🎉</div>' +
+        gifHtml + captionHtml +
+        '<div class="decoy-troll fake-win">' + escHtml(c.trollMsg||'YOU WON!!!') + '</div>' +
         '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
         redirectHtml +
-      '</div></div>';
-  } else if(subtype === 'fake-win') {
-    el.innerHTML = '<div class="decoy-page"><div class="confetti-row">🎉🏆🎊🥇🎉</div>' +
-      gifHtml +
-      captionHtml +
-      '<div class="decoy-troll fake-win">' + escHtml(c.trollMsg||'YOU WON!!!') + '</div>' +
-      '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
-      redirectHtml + '</div>';
+      '</div>';
+    startRedirect(redirectUrl);
   } else {
-    el.innerHTML = '<div class="decoy-page">' +
-      gifHtml +
-      captionHtml +
-      '<div class="decoy-troll ' + subtype + '">' + escHtml(c.trollMsg||'NICE TRY.') + '</div>' +
-      '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
-      redirectHtml + '</div>';
+    el.innerHTML =
+      '<div class="decoy-page">' +
+        gifHtml + captionHtml +
+        '<div class="decoy-troll ' + subtype + '">' + escHtml(c.trollMsg||'NICE TRY.') + '</div>' +
+        '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
+        redirectHtml +
+      '</div>';
+    startRedirect(redirectUrl);
   }
+
+  // Wire the "Take Me Back Now" button after DOM is set
+  setTimeout(function() {
+    var btn = document.getElementById('redir-btn');
+    if(btn) btn.addEventListener('click', function() { window.location.href = redirectUrl; });
+  }, 0);
 }
 
-function triggerPhish() {
-  var form = document.getElementById('phish-form');
-  var reveal = document.getElementById('phish-reveal');
-  if(form) form.style.display = 'none';
-  if(reveal) reveal.style.display = 'block';
+function startRedirect(url) {
+  if(activeRedirectInterval) clearInterval(activeRedirectInterval);
+  var count = 10;
+  activeRedirectInterval = setInterval(function() {
+    count--;
+    var el = document.getElementById('redir-count');
+    if(el) el.textContent = count;
+    if(count <= 0) {
+      clearInterval(activeRedirectInterval);
+      activeRedirectInterval = null;
+      window.location.href = url;
+    }
+  }, 1000);
 }
 
 function fixGifUrl(url) {
   if(!url) return '';
-  // Already an embed URL
   if(url.indexOf('giphy.com/embed/') !== -1) return url;
-  // Long media URL: extract ID
   var mediaMatch = url.match(/giphy\.com\/media\/(?:v1\.[^/]+\/)?([a-zA-Z0-9]+)\/giphy\.gif/);
   if(mediaMatch) return 'https://giphy.com/embed/' + mediaMatch[1];
-  // giphy.com/gifs/some-slug-ID — ID is last hyphen segment
   var gifsMatch = url.match(/giphy\.com\/gifs\/(?:[^/]+-)?([a-zA-Z0-9]+)$/);
   if(gifsMatch) return 'https://giphy.com/embed/' + gifsMatch[1];
-  // i.giphy.com/ID.gif
   var iMatch = url.match(/i\.giphy\.com\/([a-zA-Z0-9]+)\.gif/);
   if(iMatch) return 'https://giphy.com/embed/' + iMatch[1];
-  // Already a plain ID (no slashes, no dots)
   if(/^[a-zA-Z0-9]+$/.test(url.trim())) return 'https://giphy.com/embed/' + url.trim();
   return url;
 }
