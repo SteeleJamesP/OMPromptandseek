@@ -219,7 +219,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="divider"></div>
       <div class="sidebar-title">Deployed URL</div>
       <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:10px">QR codes append <code style="color:var(--accent2)">?id=ID</code> to this URL.</div>
-      <input class="field-input" id="base-url-input" type="text" placeholder="https://yourusername.github.io/prompt-and-seek" oninput="renderEditor()">
+      <input class="field-input" id="base-url-input" type="text" placeholder="https://steelejamesp.github.io/OMPromptandseek" value="https://steelejamesp.github.io/OMPromptandseek" oninput="renderEditor()">
       <div style="margin-top:12px">
         <button class="btn btn-secondary" style="width:100%;font-size:10px" onclick="adminLogout()">🔒 Lock Admin</button>
       </div>
@@ -323,12 +323,49 @@ var DEFAULT_DECOYS = [
   {id:'d20',type:'decoy',name:'Decoy: Dead End 4',subtype:'loop',trollMsg:'HALLUCINATION DETECTED.',trollSub:'This clue was an AI hallucination. It seemed real but contained no useful information — much like this sentence. Go find a real one.',gifUrl:''}
 ];
 
+var DEFAULT_GIFS = [
+  {id:'g1',type:'gif',name:'GIF Page 1',gifUrl:'https://giphy.com/embed/LPFNd1AJBoYcVUExmE',caption:''},
+  {id:'g2',type:'gif',name:'GIF Page 2',gifUrl:'https://giphy.com/embed/citBl9yPwnUOs',caption:''},
+  {id:'g3',type:'gif',name:'GIF Page 3',gifUrl:'https://giphy.com/embed/dJYoOVAWf2QkU',caption:''},
+  {id:'g4',type:'gif',name:'GIF Page 4',gifUrl:'https://giphy.com/embed/98MaHVwJOmWMz4cz1K',caption:''},
+  {id:'g5',type:'gif',name:'GIF Page 5',gifUrl:'https://giphy.com/embed/Lz6971fkGSgCMOOncl',caption:''},
+  {id:'g6',type:'gif',name:'GIF Page 6',gifUrl:'https://giphy.com/embed/SUnnfaSxhfLvf8H7XB',caption:''},
+  {id:'g7',type:'gif',name:'GIF Page 7',gifUrl:'https://giphy.com/embed/WoF3yfYupTt8mHc7va',caption:''},
+  {id:'g8',type:'gif',name:'GIF Page 8',gifUrl:'https://giphy.com/embed/mOuVjiA6qvLGB3NusU',caption:''},
+  {id:'g9',type:'gif',name:'GIF Page 9',gifUrl:'https://giphy.com/embed/85Q7aV4R5bxDO',caption:''},
+  {id:'g10',type:'gif',name:'GIF Page 10',gifUrl:'https://giphy.com/embed/J9MnwDiwCmjkexy9e1',caption:''},
+  {id:'g11',type:'gif',name:'GIF Page 11',gifUrl:'https://giphy.com/embed/dAVLtOPb0JeIE',caption:''},
+  {id:'g12',type:'gif',name:'GIF Page 12',gifUrl:'https://giphy.com/embed/l36kU80xPf0ojG0Erg',caption:''},
+  {id:'g13',type:'gif',name:'GIF Page 13',gifUrl:'https://giphy.com/embed/lkdH8FmImcGoylv3t3',caption:''},
+  {id:'g14',type:'gif',name:'GIF Page 14',gifUrl:'https://giphy.com/embed/tVJOT3ngZNvNu',caption:''},
+  {id:'g15',type:'gif',name:'GIF Page 15',gifUrl:'https://giphy.com/embed/X7Bckr1JaJS1opWTzO',caption:''},
+  {id:'g16',type:'gif',name:'GIF Page 16',gifUrl:'https://giphy.com/embed/LMNsgeBFskg4sd7bWk',caption:''},
+  {id:'g17',type:'gif',name:'GIF Page 17',gifUrl:'https://giphy.com/embed/0lGd2OXXHe4tFhb7Wh',caption:''},
+  {id:'g18',type:'gif',name:'GIF Page 18',gifUrl:'https://giphy.com/embed/LoGh1t5iGxFOE',caption:''}
+];
+
 var clues = [];
 try {
   var saved = localStorage.getItem('ps_v3');
-  clues = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_REAL)).concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)));
+  if(saved) {
+    var parsed = JSON.parse(saved);
+    // Merge: always keep hardcoded defaults, append any extra items added via admin
+    var defaultIds = {};
+    DEFAULT_REAL.concat(DEFAULT_DECOYS).concat(DEFAULT_GIFS).forEach(function(c){ defaultIds[c.id] = true; });
+    var extras = parsed.filter(function(c){ return !defaultIds[c.id]; });
+    clues = JSON.parse(JSON.stringify(DEFAULT_REAL))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_GIFS)))
+      .concat(extras);
+  } else {
+    clues = JSON.parse(JSON.stringify(DEFAULT_REAL))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_GIFS)));
+  }
 } catch(e) {
-  clues = JSON.parse(JSON.stringify(DEFAULT_REAL)).concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)));
+  clues = JSON.parse(JSON.stringify(DEFAULT_REAL))
+    .concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)))
+    .concat(JSON.parse(JSON.stringify(DEFAULT_GIFS)));
 }
 
 var selectedId = null;
