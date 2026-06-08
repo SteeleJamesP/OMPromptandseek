@@ -435,7 +435,7 @@ function renderHuntView() {
 }
 
 function renderWaiting(el) {
-  el.innerHTML = '<div class="waiting-screen"><span class="waiting-bot">🤖</span><div class="waiting-title">The hunt is<br><em>on.</em></div><div class="waiting-sub">Was this site AI generated? Probably I'm busy cause y'all submit a lot of tickets. Anyways find a QR code hidden somewhere in the office, scan it, and your AI prompt will appear here or they wont. Good Luck!</div><div class="scan-indicator"><span class="pulse-dot"></span> Waiting for a QR scan...</div></div>';
+  el.innerHTML = '<div class="waiting-screen"><span class="waiting-bot">🤖</span><div class="waiting-title">The hunt is<br><em>on.</em></div><div class="waiting-sub">Was this site AI generated? Probably. I'm busy cause y'all submit a lot of tickets. Anyways find a QR code hidden somewhere in the office, scan it, and your AI prompt will appear here. Good Luck!</div><div class="scan-indicator"><span class="pulse-dot"></span> Waiting for a QR scan...</div></div>';
 }
 function renderUnknown(el) {
   el.innerHTML = '<div class="waiting-screen"><span style="font-size:60px;display:block;margin-bottom:16px">❓</span><div class="waiting-title">Unknown <em>signal.</em></div><div class="waiting-sub">This QR code doesn\'t match any clue. Check with your hunt organizer.</div></div>';
