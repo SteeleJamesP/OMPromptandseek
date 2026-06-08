@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt & Seek — AI Scavenger Hunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;
+  --border:rgba(120,120,200,0.15);--border2:rgba(120,120,200,0.3);
+  --accent:#7c6af7;--accent2:#3fe8c8;--danger:#f74e6a;--warning:#f7a35c;
+  --text:#e8e8f0;--muted:#8888aa;
+  --mono:'Space Mono',monospace;--display:'Syne',sans-serif;
+  --glow:0 0 24px rgba(124,106,247,0.25);
+}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,106,247,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(124,106,247,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1}
+.hidden{display:none!important}
+
+/* HEADER */
+.header{padding:18px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(10,10,15,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.logo{font-family:var(--display);font-size:18px;font-weight:800;display:flex;align-items:center;gap:10px}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;display:block}
+.header-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px}
+.tab{padding:7px 14px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.tab.active{background:var(--accent);color:white}
+
+/* VIEWS */
+.view{display:none}.view.active{display:block}
+
+/* ADMIN LAYOUT */
+.admin-layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 61px)}
+.sidebar{border-right:1px solid var(--border);padding:20px;background:var(--surface);overflow-y:auto;max-height:calc(100vh - 61px)}
+.sidebar-title{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;margin-top:4px}
+.clue-list{display:flex;flex-direction:column;gap:6px}
+.clue-item{padding:11px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.2s;background:var(--surface2);position:relative;overflow:hidden}
+.clue-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;opacity:0;transition:opacity 0.2s}
+.clue-item.type-real::before{background:var(--accent)}
+.clue-item.type-decoy::before{background:var(--danger)}
+.clue-item.type-gif::before{background:var(--warning)}
+.clue-item:hover{border-color:var(--border2)}
+.clue-item.selected{border-color:var(--accent)}
+.clue-item.selected.type-decoy{border-color:var(--danger)}
+.clue-item.selected.type-gif{border-color:var(--warning)}
+.clue-item.selected::before{opacity:1}
+.clue-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.clue-tag.real{color:var(--accent)}.clue-tag.decoy{color:var(--danger)}.clue-tag.gif{color:var(--warning)}
+.clue-name{font-family:var(--display);font-size:13px;font-weight:600;color:var(--text)}
+.clue-loc{font-size:10px;color:var(--muted);margin-top:2px}
+.add-btn{width:100%;margin-top:8px;padding:10px;border:1px dashed var(--border2);border-radius:8px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:1px}
+.add-btn:hover{border-color:var(--accent);color:var(--accent)}
+.add-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.add-btn.warning:hover{border-color:var(--warning);color:var(--warning)}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.sidebar-section{margin-bottom:8px}
+
+/* EDITOR */
+.editor{padding:28px 36px;max-width:760px;overflow-y:auto}
+.editor-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.editor-title{font-family:var(--display);font-size:24px;font-weight:800;line-height:1.1}
+.editor-title span.accent{color:var(--accent)}
+.editor-title span.danger{color:var(--danger)}
+.editor-title span.warning{color:var(--warning)}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid}
+.badge-accent{color:var(--accent);border-color:var(--accent)}
+.badge-danger{color:var(--danger);border-color:var(--danger)}
+.badge-warning{color:var(--warning);border-color:var(--warning)}
+.field-group{margin-bottom:20px}
+.field-label{display:block;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
+.field-input{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;transition:border-color 0.2s;outline:none}
+.field-input:focus{border-color:var(--accent)}
+.field-textarea{min-height:100px;resize:vertical;line-height:1.6}
+.field-select{appearance:none;cursor:pointer}
+.action-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:9px 16px;border-radius:8px;border:none;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px)}
+.btn-danger-solid{background:var(--danger);color:white}
+.btn-danger-solid:hover{opacity:0.85}
+.btn-secondary{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2)}
+.btn-del{background:transparent;border:1px solid rgba(220,60,60,0.3);color:rgba(220,100,100,0.8)}
+.btn-del:hover{border-color:rgba(220,60,60,0.7);color:rgba(255,80,80,1)}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:calc(100vh - 200px);gap:12px;color:var(--muted);font-size:13px;text-align:center}
+.empty-icon{font-size:40px;margin-bottom:8px}
+
+/* BULK IMPORT */
+.bulk-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:18px}
+.bulk-box .field-textarea{min-height:120px;font-size:11px}
+
+/* QR MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px;width:400px;text-align:center;transform:scale(0.95);transition:transform 0.2s}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-title{font-family:var(--display);font-size:18px;font-weight:800;margin-bottom:5px}
+.modal-sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:20px;text-transform:uppercase}
+#qr-container{display:flex;justify-content:center;margin-bottom:16px}
+#qr-container canvas,#qr-container img{border-radius:8px;border:4px solid white}
+.qr-url{font-size:10px;color:var(--muted);word-break:break-all;margin-bottom:16px;padding:7px 11px;background:var(--surface2);border-radius:6px}
+
+/* PASSWORD SCREEN */
+.pw-screen{min-height:calc(100vh - 61px);display:flex;align-items:center;justify-content:center;padding:24px}
+.pw-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:36px;width:100%;max-width:380px;text-align:center}
+.pw-icon{font-size:48px;margin-bottom:16px;display:block}
+.pw-title{font-family:var(--display);font-size:22px;font-weight:800;margin-bottom:8px}
+.pw-sub{font-size:12px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.pw-input{width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none;text-align:center;letter-spacing:3px;margin-bottom:12px}
+.pw-input:focus{border-color:var(--accent)}
+.pw-error{font-size:11px;color:var(--danger);margin-bottom:12px;min-height:16px}
+
+/* HUNT VIEW */
+.hunt-view{min-height:calc(100vh - 61px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+
+/* Waiting */
+.waiting-screen{text-align:center;max-width:440px;animation:fadeUp 0.5s ease forwards}
+.waiting-bot{font-size:72px;margin-bottom:20px;display:block;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.waiting-title{font-family:var(--display);font-size:28px;font-weight:800;margin-bottom:12px;line-height:1.1}
+.waiting-title em{font-style:normal;color:var(--accent2)}
+.waiting-sub{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:28px}
+.scan-indicator{display:inline-flex;align-items:center;gap:10px;padding:11px 18px;border:1px solid var(--border2);border-radius:30px;font-size:11px;color:var(--muted);letter-spacing:1px}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+
+/* Real clue */
+.clue-page{width:100%;max-width:560px;animation:fadeUp 0.5s ease forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.clue-step{font-size:10px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+.clue-title{font-family:var(--display);font-size:32px;font-weight:800;line-height:1.05;margin-bottom:24px}
+.clue-title em{font-style:normal;color:var(--accent2)}
+.terminal-card{background:#0d0d14;border:1px solid var(--border2);border-radius:12px;overflow:hidden;margin-bottom:20px;box-shadow:var(--glow)}
+.terminal-bar{padding:10px 16px;background:var(--surface2);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot-r{background:#ff5f57}.dot-y{background:#febc2e}.dot-g{background:#28c840}
+.terminal-label{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-left:auto;text-transform:uppercase}
+.terminal-body{padding:22px}
+.terminal-prompt-line{font-size:11px;color:var(--accent2);margin-bottom:10px;letter-spacing:1px}
+.terminal-prompt-line span{color:var(--muted)}
+.prompt-display{font-family:var(--mono);font-size:13px;line-height:1.8;color:#c8d0ff;word-break:break-word;white-space:pre-wrap}
+.prompt-cursor{display:inline-block;width:2px;height:14px;background:var(--accent2);animation:blink 1s step-end infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.copy-btn{margin-top:14px;width:100%;padding:11px;background:rgba(124,106,247,0.1);border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;text-transform:uppercase}
+.copy-btn:hover{background:rgba(124,106,247,0.2)}
+.copy-btn.copied{color:var(--accent2);border-color:var(--accent2);background:rgba(63,232,200,0.1)}
+.instructions-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+.inst-title{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+.inst-step{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.inst-num{width:22px;height:22px;border-radius:50%;background:rgba(124,106,247,0.15);border:1px solid var(--accent);color:var(--accent);font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.inst-text{font-size:12px;color:var(--text);line-height:1.5}
+
+/* DECOY PAGE */
+.decoy-page{width:100%;max-width:540px;animation:fadeUp 0.5s ease forwards;text-align:center}
+.decoy-gif{width:100%;max-width:400px;border-radius:12px;margin:0 auto 24px;display:block}
+.decoy-troll{font-family:var(--display);font-size:28px;font-weight:800;margin-bottom:12px}
+.decoy-troll.phish{color:var(--danger)}
+.decoy-troll.fake-win{color:var(--warning)}
+.decoy-troll.loop{color:var(--accent)}
+.decoy-troll.wrong{color:var(--accent2)}
+.decoy-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto}
+.redirect-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:8px}
+.redirect-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.redirect-countdown{font-family:var(--display);font-size:32px;font-weight:800;color:var(--accent)}
+.redirect-msg{font-size:12px;color:var(--muted);margin-top:6px}
+.redirect-btn{margin-top:16px;padding:13px 28px;background:var(--accent);border:none;border-radius:8px;color:white;font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:1px;transition:all 0.2s}
+.redirect-btn:hover{opacity:0.85}
+
+/* PHISH FORM */
+.phish-card{background:white;border-radius:12px;padding:28px;max-width:360px;margin:0 auto 24px;text-align:left}
+.phish-logo{font-size:22px;font-weight:800;color:#333;margin-bottom:4px;font-family:sans-serif}
+.phish-tagline{font-size:12px;color:#888;margin-bottom:20px;font-family:sans-serif}
+.phish-label{display:block;font-size:12px;color:#555;margin-bottom:5px;font-family:sans-serif}
+.phish-input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;margin-bottom:14px;color:#333;font-family:sans-serif;outline:none}
+.phish-input:focus{border-color:#7c6af7}
+.phish-btn{width:100%;padding:11px;background:#7c6af7;border:none;border-radius:6px;color:white;font-size:14px;cursor:pointer;font-family:sans-serif}
+
+/* FAKE WIN */
+.confetti-row{font-size:32px;margin-bottom:16px;letter-spacing:8px}
+
+/* GIF PAGE */
+.gif-page{width:100%;max-width:600px;display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 200px)}
+.gif-page img{max-width:100%;border-radius:12px;max-height:80vh;object-fit:contain}
+.gif-placeholder{width:100%;height:300px;background:var(--surface2);border:1px dashed var(--border2);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;letter-spacing:1px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--accent);color:white;padding:10px 20px;border-radius:8px;font-size:12px;letter-spacing:1px;transition:transform 0.3s;z-index:300;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:700px){
+  .admin-layout{grid-template-columns:1fr}
+  .sidebar{border-right:none;border-bottom:1px solid var(--border);max-height:40vh}
+  .header{padding:14px 16px;flex-wrap:wrap;gap:10px}
+  .editor{padding:18px 14px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">🤖</div>
+    <div>Prompt &amp; Seek<span class="logo-sub">AI Scavenger Hunt</span></div>
+  </div>
+  <div class="header-tabs" id="header-tabs">
+    <button class="tab active" onclick="switchView('hunt')">Hunt</button>
+    <button class="tab" onclick="attemptAdmin()">Admin</button>
+  </div>
+</header>
+
+<!-- HUNT VIEW -->
+<div class="view active" id="view-hunt">
+  <div class="hunt-view" id="hunt-content"></div>
+</div>
+
+<!-- ADMIN PASSWORD SCREEN -->
+<div class="view" id="view-pw">
+  <div class="pw-screen">
+    <div class="pw-card">
+      <span class="pw-icon">🔐</span>
+      <div class="pw-title">Admin Access</div>
+      <div class="pw-sub">This area is restricted to hunt organizers only.</div>
+      <input class="pw-input" type="password" id="pw-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')checkPw()">
+      <div class="pw-error" id="pw-error"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="checkPw()">Unlock Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN VIEW -->
+<div class="view" id="view-admin">
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <!-- Real Clues -->
+      <div class="sidebar-section">
+        <div class="sidebar-title" style="color:var(--accent)">▸ Real Clues</div>
+        <div class="clue-list" id="list-real"></div>
+        <button class="add-btn" onclick="addClue('real')">+ Add Real Clue</button>
+      </div>
+      <div class="divider"></div>
+      <!-- Decoys -->
+      <div class="sidebar-section">
+        <div class="sidebar-title" style="color:var(--danger)">▸ Decoy Clues</div>
+        <div class="clue-list" id="list-decoy"></div>
+        <button class="add-btn danger" onclick="addClue('decoy')">+ Add Decoy</button>
+      </div>
+      <div class="divider"></div>
+      <!-- GIF Pages -->
+      <div class="sidebar-section">
+        <div class="sidebar-title" style="color:var(--warning)">▸ GIF Pages</div>
+        <div class="clue-list" id="list-gif"></div>
+        <button class="add-btn warning" onclick="addClue('gif')">+ Add GIF Page</button>
+        <button class="add-btn warning" onclick="showBulkImport()" style="margin-top:6px">⬆ Bulk Import GIF URLs</button>
+      </div>
+      <div class="divider"></div>
+      <!-- URL -->
+      <div class="sidebar-title">Deployed URL</div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:10px">QR codes append <code style="color:var(--accent2)">?id=ID</code> to this URL.</div>
+      <input class="field-input" id="base-url-input" type="text" placeholder="https://your-site.netlify.app" oninput="renderEditor()">
+      <div style="margin-top:12px">
+        <button class="btn btn-secondary" style="width:100%;font-size:10px" onclick="adminLogout()">🔒 Lock Admin</button>
+      </div>
+    </aside>
+    <main class="editor" id="editor-panel">
+      <div class="empty-state"><div class="empty-icon">👈</div><div>Select an item to edit</div></div>
+    </main>
+  </div>
+</div>
+
+<!-- Bulk Import Modal -->
+<div class="modal-overlay" id="bulk-modal">
+  <div class="modal" style="width:500px;text-align:left">
+    <div class="modal-title">Bulk Import GIF URLs</div>
+    <div class="modal-sub">One URL per line — each becomes a new GIF page</div>
+    <textarea class="field-input field-textarea" id="bulk-textarea" style="min-height:160px;margin-bottom:14px" placeholder="https://media.giphy.com/...&#10;https://media.giphy.com/...&#10;https://i.giphy.com/..."></textarea>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="doBulkImport()">Import All</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeBulkModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal">
+    <div class="modal-title">QR Code</div>
+    <div class="modal-sub" id="qr-modal-sub"></div>
+    <div id="qr-container"></div>
+    <div class="qr-url" id="qr-url-display"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="downloadQR()">Download PNG</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeQRModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+var ADMIN_PW = 'Mrmeowmeowface';
+var adminUnlocked = false;
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+var DEFAULT_REAL = [
+  {id:'r1',type:'real',name:'Clue 1',location:'Break Room',prompt:'You are a Yelp reviewer who takes coffee very seriously. Leave a dramatic one paragraph review of an office location where the coffee is always either burnt or lukewarm, the mugs are passive-aggressively labeled with names, and someone always microwaves fish. Do not name the room. Respond in exactly one paragraph, no more.',hint:'Answer points to: Break Room'},
+  {id:'r2',type:'real',name:'Clue 2',location:'Conference Room',prompt:'You are an AI that has attended 47,000 meetings and developed strong opinions. Describe in one paragraph the room where humans gather to discuss things that could have been an email, stare at a screen that takes 4 minutes to connect, and nod slowly while secretly thinking about lunch. Do not name the room. Respond in exactly one paragraph, no more.',hint:'Answer points to: Conference Room'},
+  {id:'r3',type:'real',name:'Clue 3',location:'Server Room',prompt:'Write a haiku trilogy about a cold, humming room where blinking lights keep secrets and the air is always 68 degrees. The room requires a very specific keycard. Respond in exactly one paragraph, no more.',hint:'Answer points to: Server / IT Room'},
+  {id:'r4',type:'real',name:'Clue 4',location:'Reception / Lobby',prompt:'You are a golden retriever arriving at an office building for the first time. Describe in one paragraph the first room you encounter — the one with the shiny desk, the person who smiles at everyone, the weird art on the wall, and the chairs that look comfortable but are not. Do not name the room. Respond in exactly one paragraph, no more.',hint:'Answer points to: Reception / Lobby'},
+  {id:'r5',type:'real',name:'Clue 5',location:'Supply Closet',prompt:'Decode this emoji sequence and describe the office location it represents in exactly one paragraph: 📦🖊️📎🗂️🔒. Describe what someone would find there and why they visit. Do not name the room. Respond in exactly one paragraph, no more.',hint:'Answer points to: Supply Closet'},
+  {id:'r6',type:'real',name:'Clue 6',location:'CEO Office',prompt:'You are a conspiracy theorist who believes the corner office at the end of the hall is where all the real decisions are made, but no one is ever sure what actually happens in there. Describe it in one paragraph using your most unhinged but workplace-appropriate theory. Do not name the room or the person in it. Respond in exactly one paragraph, no more.',hint:'Answer points to: CEO / Executive Office'},
+  {id:'r7',type:'real',name:'Clue 7',location:'Phone Booth Desk',prompt:'You are a time-traveling archivist. Describe in one paragraph a peculiar piece of office furniture that exists in two eras simultaneously — one foot in the age of rotary dials and copper wires, one foot in the open-plan future. It is a private island in a sea of noise, a relic repurposed for the modern worker who still needs to disappear. Do not name it directly. Respond in exactly one paragraph, no more.',hint:'Answer points to: Phone Booth Desk'},
+  {id:'r8',type:'real',name:'Clue 8',location:'The Printer',prompt:'You are a therapist. Your patient is an office worker who has developed an irrational but completely justified fear of a specific machine. This machine has betrayed them countless times — it jams at the worst moments, runs out of ink during critical deadlines, and makes sounds that can only be described as a cry for help. Describe where this machine lives in the office and the emotions it triggers. Respond in exactly one paragraph, no more.',hint:'Answer points to: The Printer'},
+  {id:'r9',type:'real',name:'Clue 9',location:'Snack Area',prompt:'You are a nature documentary narrator in the style of David Attenborough. Describe in one paragraph a sacred corner of the modern office ecosystem where desperate humans migrate during the 3pm energy crash, driven by ancient biological instincts and sheer boredom. The location hoards treasures of questionable nutritional value, and yet the creatures return to it daily without fail. Do not name the location. Respond in exactly one paragraph, no more.',hint:'Answer points to: Snack Drawer / Vending Machine'},
+  {id:'r10',type:'real',name:'Clue 10 (Final)',location:'HR Office',prompt:'No cap, slay this prompt fr fr. You are a Gen Alpha AI that only speaks in the most unhinged brainrot slang. Describe the most sus, lowkey scary office in the whole building — the one that\'s giving "we need to talk" energy, where the humans go when they\'re about to get their whole vibe checked by the higher-ups. The place that\'s rent free in everyone\'s head the moment their manager says "do you have a minute." Bussin with paperwork and policies. Don\'t say the name of the room. Respond in exactly one paragraph, no more.',hint:'Final clue — leads to the Uni Bot at HR Office'}
+];
+
+var DEFAULT_DECOYS = [
+  // Phishing (5)
+  {id:'d1',type:'decoy',name:'Decoy: Phishing Login',subtype:'phish',trollMsg:'YOU JUST GOT PHISHED.',trollSub:'Congratulations, you entered your password into a random QR code you found taped to a wall. Your IT department would like a word.',gifUrl:''},
+  {id:'d2',type:'decoy',name:'Decoy: "System Update"',subtype:'phish',trollMsg:'ACCESS DENIED.',trollSub:'This was a simulated phishing attempt. In a real attack, your credentials would now belong to someone in a dark basement. Keep hunting.',gifUrl:''},
+  {id:'d3',type:'decoy',name:'Decoy: "Verify Identity"',subtype:'phish',trollMsg:'NICE TRY, BUT ALSO NOT NICE.',trollSub:'You just handed your login to a scavenger hunt QR code. Your password has been reset to "IFellForIt123". Just kidding. Kind of.',gifUrl:''},
+  {id:'d4',type:'decoy',name:'Decoy: "HR Portal Login"',subtype:'phish',trollMsg:'PHISHED. AGAIN.',trollSub:'The IT department is watching. They are not proud. Head back and try a real clue.',gifUrl:''},
+  {id:'d5',type:'decoy',name:'Decoy: "Prize Claim Form"',subtype:'phish',trollMsg:'THIS WAS NOT THE PRIZE.',trollSub:'Anyone who asks for your password to give you a prize is lying. Even us. Especially us. Back to the hunt.',gifUrl:''},
+  // Fake winners (4)
+  {id:'d6',type:'decoy',name:'Decoy: Fake Winner',subtype:'fake-win',trollMsg:'YOU WON!!!',trollSub:'Just kidding. Absolutely not. The bot is still out there and you fell for the oldest trick in the book. Get back out there.',gifUrl:''},
+  {id:'d7',type:'decoy',name:'Decoy: Fake Winner 2',subtype:'fake-win',trollMsg:'CONGRATULATIONS CHAMPION!',trollSub:'Lol no. This is a decoy. The real finish line is still waiting for someone smarter than you. (We believe in you though.)',gifUrl:''},
+  {id:'d8',type:'decoy',name:'Decoy: Fake Winner 3',subtype:'fake-win',trollMsg:'FIRST PLACE! 🏆',trollSub:'Bold of you to assume it would be this easy. The Uni Bot is still hidden somewhere, laughing at you. Go find it.',gifUrl:''},
+  {id:'d9',type:'decoy',name:'Decoy: Fake Winner 4',subtype:'fake-win',trollMsg:'THE HUNT IS OVER!',trollSub:'It is not. Not even close. Nice hustle though. Back to it.',gifUrl:''},
+  // Loop traps (4)
+  {id:'d10',type:'decoy',name:'Decoy: Loop Trap 1',subtype:'loop',trollMsg:'OH, THIS AGAIN.',trollSub:'You found a loop. A classic. The AI predicted you would end up here. It wasn\'t impressed. Keep moving.',gifUrl:''},
+  {id:'d11',type:'decoy',name:'Decoy: Loop Trap 2',subtype:'loop',trollMsg:'STILL HERE?',trollSub:'This QR code goes nowhere. Well, it goes back. Which is forward if you think about it. The AI thinks you should stop scanning random walls.',gifUrl:''},
+  {id:'d12',type:'decoy',name:'Decoy: Loop Trap 3',subtype:'loop',trollMsg:'INFINITE LOOP DETECTED.',trollSub:'Error 418: You are a teapot. This clue does not exist in the way you think it does. Please redirect your biological CPU back to a real clue.',gifUrl:''},
+  {id:'d13',type:'decoy',name:'Decoy: Loop Trap 4',subtype:'loop',trollMsg:'YOU HAVE BEEN HERE BEFORE.',trollSub:'The matrix has you. Or maybe you just keep scanning everything on the wall hoping for the best. Respectable strategy. Wrong result. Go back.',gifUrl:''},
+  // Wrong locations (3)
+  {id:'d14',type:'decoy',name:'Decoy: Wrong Location 1',subtype:'wrong',trollMsg:'THE ROOF?',trollSub:'The Uni Bot is not on the roof. Please do not go to the roof. The clue was not pointing to the roof. Go back.',gifUrl:''},
+  {id:'d15',type:'decoy',name:'Decoy: Wrong Location 2',subtype:'wrong',trollMsg:'THE PARKING GARAGE?',trollSub:'Bold. Adventurous. Incorrect. The bot is inside the building, in a place with air conditioning and fluorescent lighting. Redirect yourself.',gifUrl:''},
+  {id:'d16',type:'decoy',name:'Decoy: Wrong Location 3',subtype:'wrong',trollMsg:'WRONG FLOOR.',trollSub:'You are on the wrong floor. Or the right floor but the wrong wall. Or the right wall but the wrong QR code. The point is: you are wrong. Go back.',gifUrl:''},
+  // Cryptic dead ends (4)
+  {id:'d17',type:'decoy',name:'Decoy: Cryptic Dead End 1',subtype:'loop',trollMsg:'SIGNAL LOST.',trollSub:'This node was a ghost in the network. The AI that generated this clue has since been retrained on better data. Head back to a real signal.',gifUrl:''},
+  {id:'d18',type:'decoy',name:'Decoy: Cryptic Dead End 2',subtype:'loop',trollMsg:'404: CLUE NOT FOUND.',trollSub:'The information you are looking for has moved, expired, or never existed. Please update your bookmarks and try a real clue.',gifUrl:''},
+  {id:'d19',type:'decoy',name:'Decoy: Cryptic Dead End 3',subtype:'phish',trollMsg:'NICE DETECTIVE WORK.',trollSub:'You found absolutely nothing useful. The AI is proud of your curiosity and disappointed in your results. Back to the hunt, detective.',gifUrl:''},
+  {id:'d20',type:'decoy',name:'Decoy: Cryptic Dead End 4',subtype:'loop',trollMsg:'HALLUCINATION DETECTED.',trollSub:'This clue was an AI hallucination. It seemed real but contained no useful information — much like this sentence. Go find a real one.',gifUrl:''}
+];
+
+var clues = [];
+try {
+  var saved = localStorage.getItem('ps_v2');
+  clues = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_REAL)).concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)));
+} catch(e) {
+  clues = JSON.parse(JSON.stringify(DEFAULT_REAL)).concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)));
+}
+
+var selectedId = null;
+var activeQRId = null;
+
+function save() { try { localStorage.setItem('ps_v2', JSON.stringify(clues)); } catch(e) {} }
+function getById(id) { for(var i=0;i<clues.length;i++) if(clues[i].id===id) return clues[i]; return null; }
+function getRealClues() { return clues.filter(function(c){return c.type==='real';}); }
+function getBaseUrl() {
+  var el = document.getElementById('base-url-input');
+  var v = el ? el.value.trim() : '';
+  if(!v) v = window.location.origin + window.location.pathname.replace(/\/$/,'');
+  return v.replace(/\/$/,'');
+}
+
+// ── PASSWORD ──────────────────────────────────────────────────────────────────
+function attemptAdmin() {
+  if(adminUnlocked) { showAdmin(); return; }
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('view-pw').classList.add('active');
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  setTimeout(function(){ var i=document.getElementById('pw-input'); if(i) i.focus(); },100);
+}
+function checkPw() {
+  var val = document.getElementById('pw-input').value;
+  if(val === ADMIN_PW) {
+    adminUnlocked = true;
+    document.getElementById('pw-error').textContent = '';
+    document.getElementById('pw-input').value = '';
+    showAdmin();
+  } else {
+    document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
+    document.getElementById('pw-input').value = '';
+  }
+}
+function showAdmin() {
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('view-admin').classList.add('active');
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  renderSidebar();
+}
+function adminLogout() {
+  adminUnlocked = false;
+  switchView('hunt');
+}
+
+// ── VIEWS ─────────────────────────────────────────────────────────────────────
+function switchView(v) {
+  if(v==='admin') { attemptAdmin(); return; }
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab')[0].classList.add('active');
+  if(v==='hunt') renderHuntView();
+}
+
+// ── HUNT VIEW ─────────────────────────────────────────────────────────────────
+function renderHuntView() {
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id') || params.get('clue');
+  var el = document.getElementById('hunt-content');
+  if(!id) { renderWaiting(el); return; }
+  var c = getById(id);
+  if(!c) { renderUnknown(el); return; }
+  if(c.type==='real') renderRealClue(el, c);
+  else if(c.type==='decoy') renderDecoy(el, c);
+  else if(c.type==='gif') renderGifPage(el, c);
+}
+
+function renderWaiting(el) {
+  el.innerHTML = '<div class="waiting-screen"><span class="waiting-bot">🤖</span><div class="waiting-title">The hunt is<br><em>on.</em></div><div class="waiting-sub">Find a QR code hidden somewhere in the office, scan it, and your AI prompt will appear here.</div><div class="scan-indicator"><span class="pulse-dot"></span> Waiting for a QR scan...</div></div>';
+}
+
+function renderUnknown(el) {
+  el.innerHTML = '<div class="waiting-screen"><span style="font-size:60px;display:block;margin-bottom:16px">❓</span><div class="waiting-title">Unknown <em>signal.</em></div><div class="waiting-sub">This QR code doesn\'t match any clue. Check with your hunt organizer.</div></div>';
+}
+
+function renderRealClue(el, c) {
+  var reals = getRealClues();
+  var idx = 0;
+  for(var i=0;i<reals.length;i++) if(reals[i].id===c.id) { idx=i; break; }
+  var isLast = idx === reals.length - 1;
+  el.innerHTML = '<div class="clue-page">' +
+    '<div class="clue-step">Signal ' + (idx+1) + ' of ' + reals.length + (isLast ? ' &nbsp;•&nbsp; 🏁 Final Clue' : '') + '</div>' +
+    '<div class="clue-title">You found a<br><em>signal node.</em></div>' +
+    '<div class="terminal-card"><div class="terminal-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="terminal-label">prompt_' + c.id + '.txt</span></div>' +
+    '<div class="terminal-body"><div class="terminal-prompt-line">~/hunt <span>$ cat prompt.txt</span></div>' +
+    '<div class="prompt-display">' + escHtml(c.prompt||'[ No prompt set ]') + '<span class="prompt-cursor"></span></div>' +
+    '<button class="copy-btn" id="copy-btn" onclick="copyPrompt()">Copy Prompt</button></div></div>' +
+    '<div class="instructions-card"><div class="inst-title">How to use this prompt</div>' +
+    '<div class="inst-step"><div class="inst-num">1</div><div class="inst-text">Copy the prompt above</div></div>' +
+    '<div class="inst-step"><div class="inst-num">2</div><div class="inst-text">Open Claude, ChatGPT, or any AI chatbot on your phone</div></div>' +
+    '<div class="inst-step"><div class="inst-num">3</div><div class="inst-text">Paste the prompt — the AI\'s answer describes your next location</div></div>' +
+    '<div class="inst-step"><div class="inst-num">4</div><div class="inst-text">Find the QR code there and scan it to continue</div></div></div>' +
+    (isLast ? '<button class="redirect-btn" style="width:100%">🏆 You Found It!</button>' : '') +
+    '</div>';
+}
+
+function renderDecoy(el, c) {
+  var subtype = c.subtype || 'loop';
+  var gifHtml = c.gifUrl ? '<img src="' + escHtml(c.gifUrl) + '" class="decoy-gif" alt="">' : '';
+
+  if(subtype === 'phish') {
+    el.innerHTML = '<div class="decoy-page">' +
+      '<div class="phish-card">' +
+        '<div class="phish-logo">🔒 CorpPortal</div>' +
+        '<div class="phish-tagline">Please verify your identity to continue</div>' +
+        '<label class="phish-label">Email Address</label>' +
+        '<input class="phish-input" type="email" placeholder="you@company.com" id="phish-email">' +
+        '<label class="phish-label">Password</label>' +
+        '<input class="phish-input" type="password" placeholder="Enter your password" id="phish-pw">' +
+        '<button class="phish-btn" onclick="triggerPhish()">Sign In →</button>' +
+      '</div>' +
+      '<div id="phish-reveal" style="display:none">' +
+        gifHtml +
+        '<div class="decoy-troll phish">' + escHtml(c.trollMsg||'YOU JUST GOT PHISHED.') + '</div>' +
+        '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
+        buildRedirectBar(c) +
+      '</div>' +
+    '</div>';
+  } else if(subtype === 'fake-win') {
+    el.innerHTML = '<div class="decoy-page">' +
+      '<div class="confetti-row">🎉🏆🎊🥇🎉</div>' +
+      gifHtml +
+      '<div class="decoy-troll fake-win">' + escHtml(c.trollMsg||'YOU WON!!!') + '</div>' +
+      '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
+      buildRedirectBar(c) +
+    '</div>';
+  } else {
+    el.innerHTML = '<div class="decoy-page">' +
+      gifHtml +
+      '<div class="decoy-troll ' + subtype + '">' + escHtml(c.trollMsg||'NICE TRY.') + '</div>' +
+      '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
+      buildRedirectBar(c) +
+    '</div>';
+  }
+}
+
+function buildRedirectBar(c) {
+  var reals = getRealClues();
+  if(!reals.length) return '';
+  var target = reals[Math.floor(Math.random() * reals.length)];
+  var url = getBaseUrl() + '?id=' + target.id;
+  return '<div class="redirect-bar">' +
+    '<div class="redirect-label">Redirecting you back to the hunt in</div>' +
+    '<div class="redirect-countdown" id="redir-count">10</div>' +
+    '<div class="redirect-msg">Nice try. Get back to it →</div></div>' +
+    '<button class="redirect-btn" onclick="window.location.href=\'' + url + '\'">Take Me Back Now →</button>' +
+    '<script>var _rc=10;var _ri=setInterval(function(){_rc--;document.getElementById("redir-count").textContent=_rc;if(_rc<=0){clearInterval(_ri);window.location.href="' + url + '";}},1000);<\/script>';
+}
+
+function triggerPhish() {
+  document.querySelector('.phish-card').style.display = 'none';
+  document.getElementById('phish-reveal').style.display = 'block';
+}
+
+function renderGifPage(el, c) {
+  if(c.gifUrl) {
+    el.innerHTML = '<div class="gif-page"><img src="' + escHtml(c.gifUrl) + '" alt=""></div>';
+  } else {
+    el.innerHTML = '<div class="gif-page"><div class="gif-placeholder">[ GIF URL not set yet ]</div></div>';
+  }
+}
+
+function copyPrompt() {
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id') || params.get('clue');
+  var c = getById(id);
+  if(!c) return;
+  navigator.clipboard.writeText(c.prompt).then(function(){
+    var btn = document.getElementById('copy-btn');
+    if(btn){btn.textContent='✓ Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy Prompt';btn.classList.remove('copied');},2000);}
+  }).catch(function(){ showToast('Select and copy manually'); });
+}
+
+// ── ADMIN SIDEBAR ─────────────────────────────────────────────────────────────
+function renderSidebar() {
+  ['real','decoy','gif'].forEach(function(type) {
+    var list = document.getElementById('list-' + type);
+    var items = clues.filter(function(c){return c.type===type;});
+    list.innerHTML = items.map(function(c) {
+      var tagMap = {real:'real',decoy:'decoy',gif:'gif'};
+      var labelMap = {real:'REAL',decoy:'DECOY',gif:'GIF'};
+      return '<div class="clue-item type-' + type + (c.id===selectedId?' selected':'') + '" onclick="selectClue(\'' + c.id + '\')">' +
+        '<div class="clue-tag ' + tagMap[type] + '">' + labelMap[type] + '</div>' +
+        '<div class="clue-name">' + escHtml(c.name) + '</div>' +
+        '<div class="clue-loc">' + escHtml(c.location||c.subtype||'') + '</div>' +
+      '</div>';
+    }).join('');
+  });
+}
+
+function selectClue(id) { selectedId = id; renderSidebar(); renderEditor(); }
+
+function renderEditor() {
+  var panel = document.getElementById('editor-panel');
+  if(!selectedId) { panel.innerHTML='<div class="empty-state"><div class="empty-icon">👈</div><div>Select an item to edit</div></div>'; return; }
+  var c = getById(selectedId);
+  if(!c) return;
+  var url = getBaseUrl() + '?id=' + c.id;
+  var badgeClass = c.type==='real'?'badge-accent':c.type==='decoy'?'badge-danger':'badge-warning';
+  var titleClass = c.type==='real'?'accent':c.type==='decoy'?'danger':'warning';
+  var typeLabel = c.type==='real'?'Real Clue':c.type==='decoy'?'Decoy Clue':'GIF Page';
+
+  var html = '<div class="editor-header">' +
+    '<div><div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">' + typeLabel + '</div>' +
+    '<div class="editor-title">Editing: <span class="' + titleClass + '">' + escHtml(c.name) + '</span></div></div>' +
+    '<span class="badge ' + badgeClass + '">' + c.id + '</span></div>' +
+    '<div class="field-group"><label class="field-label">Name</label><input class="field-input" type="text" value="' + escHtml(c.name) + '" oninput="updateField(\'name\',this.value)"></div>';
+
+  if(c.type==='real') {
+    html += '<div class="field-group"><label class="field-label">Location (internal)</label><input class="field-input" type="text" value="' + escHtml(c.location||'') + '" oninput="updateField(\'location\',this.value)" placeholder="e.g. Break Room"></div>' +
+      '<div class="field-group"><label class="field-label">AI Prompt (shown to player)</label><textarea class="field-input field-textarea" oninput="updateField(\'prompt\',this.value)">' + escHtml(c.prompt||'') + '</textarea></div>' +
+      '<div class="field-group"><label class="field-label">Admin Hint</label><input class="field-input" type="text" value="' + escHtml(c.hint||'') + '" oninput="updateField(\'hint\',this.value)"></div>';
+  } else if(c.type==='decoy') {
+    html += '<div class="field-group"><label class="field-label">Decoy Type</label><select class="field-input field-select" onchange="updateField(\'subtype\',this.value)">' +
+      ['phish','fake-win','loop','wrong'].map(function(s){return '<option value="'+s+'"'+(c.subtype===s?' selected':'')+'>'+s+'</option>';}).join('') +
+      '</select></div>' +
+      '<div class="field-group"><label class="field-label">Troll Headline</label><input class="field-input" type="text" value="' + escHtml(c.trollMsg||'') + '" oninput="updateField(\'trollMsg\',this.value)" placeholder="YOU JUST GOT PHISHED."></div>' +
+      '<div class="field-group"><label class="field-label">Troll Subtext</label><textarea class="field-input field-textarea" style="min-height:70px" oninput="updateField(\'trollSub\',this.value)">' + escHtml(c.trollSub||'') + '</textarea></div>' +
+      '<div class="field-group"><label class="field-label">GIF URL (optional)</label><input class="field-input" type="text" value="' + escHtml(c.gifUrl||'') + '" oninput="updateField(\'gifUrl\',this.value)" placeholder="https://media.giphy.com/..."></div>';
+  } else if(c.type==='gif') {
+    html += '<div class="field-group"><label class="field-label">GIF URL</label><input class="field-input" type="text" value="' + escHtml(c.gifUrl||'') + '" oninput="updateField(\'gifUrl\',this.value)" placeholder="https://media.giphy.com/..."></div>';
+    if(c.gifUrl) html += '<div style="margin-bottom:16px"><img src="' + escHtml(c.gifUrl) + '" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain"></div>';
+  }
+
+  html += '<div class="divider"></div>' +
+    '<div style="margin-bottom:12px"><div class="field-label" style="margin-bottom:6px">QR Code URL</div>' +
+    '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:11px;word-break:break-all;color:var(--accent2);font-family:var(--mono)">' + escHtml(url) + '</div></div>' +
+    '<div class="action-row"><button class="btn btn-primary" onclick="openQRModal(\'' + c.id + '\')">Generate QR Code</button>' +
+    '<button class="btn btn-del" onclick="deleteClue(\'' + c.id + '\')">Delete</button></div>';
+
+  panel.innerHTML = html;
+}
+
+function updateField(field, val) {
+  var c = getById(selectedId);
+  if(c) { c[field] = val; save(); renderSidebar(); }
+}
+
+function addClue(type) {
+  var id = type[0] + Date.now();
+  var base = {id:id, type:type, name:'New ' + (type==='real'?'Clue':type==='decoy'?'Decoy':'GIF Page')};
+  if(type==='real') { base.location=''; base.prompt=''; base.hint=''; }
+  else if(type==='decoy') { base.subtype='loop'; base.trollMsg='NICE TRY.'; base.trollSub='Get back to it.'; base.gifUrl=''; }
+  else { base.gifUrl=''; }
+  clues.push(base);
+  save(); selectClue(id); renderSidebar();
+}
+
+function deleteClue(id) {
+  if(!confirm('Delete this item?')) return;
+  clues = clues.filter(function(c){return c.id!==id;});
+  selectedId = null; save(); renderSidebar(); renderEditor();
+}
+
+// ── BULK IMPORT ───────────────────────────────────────────────────────────────
+function showBulkImport() {
+  document.getElementById('bulk-modal').classList.add('open');
+  setTimeout(function(){ document.getElementById('bulk-textarea').focus(); }, 100);
+}
+function closeBulkModal() { document.getElementById('bulk-modal').classList.remove('open'); }
+function doBulkImport() {
+  var raw = document.getElementById('bulk-textarea').value.trim();
+  var urls = raw.split('\n').map(function(u){return u.trim();}).filter(function(u){return u.length>0;});
+  if(!urls.length) { showToast('No URLs found'); return; }
+  urls.forEach(function(url, i) {
+    var id = 'g' + Date.now() + '_' + i;
+    clues.push({id:id, type:'gif', name:'GIF Page ' + (i+1), gifUrl:url});
+  });
+  save(); renderSidebar(); closeBulkModal();
+  showToast('Imported ' + urls.length + ' GIF page' + (urls.length!==1?'s':''));
+  document.getElementById('bulk-textarea').value = '';
+}
+
+// ── QR ────────────────────────────────────────────────────────────────────────
+function openQRModal(id) {
+  activeQRId = id;
+  var c = getById(id);
+  var url = getBaseUrl() + '?id=' + id;
+  document.getElementById('qr-modal-sub').textContent = c ? c.name : id;
+  document.getElementById('qr-url-display').textContent = url;
+  var container = document.getElementById('qr-container');
+  container.innerHTML = '';
+  try { new QRCode(container, {text:url,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H}); }
+  catch(e) { container.innerHTML='<div style="width:200px;height:200px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#333;padding:16px;text-align:center;word-break:break-all">'+escHtml(url)+'</div>'; }
+  document.getElementById('qr-modal').classList.add('open');
+}
+function closeQRModal() { document.getElementById('qr-modal').classList.remove('open'); }
+function downloadQR() {
+  var container = document.getElementById('qr-container');
+  var canvas = container.querySelector('canvas');
+  if(!canvas){showToast('No QR found');return;}
+  var link = document.createElement('a');
+  link.download = 'qr-' + (activeQRId||'item') + '.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+document.getElementById('qr-modal').addEventListener('click', function(e){if(e.target===this)closeQRModal();});
+document.getElementById('bulk-modal').addEventListener('click', function(e){if(e.target===this)closeBulkModal();});
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');}, 2500);
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderHuntView();
+</script>
+</body>
+</html>
