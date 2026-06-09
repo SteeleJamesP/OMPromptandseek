@@ -12,7 +12,7 @@
 :root{
   --bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;
   --border:rgba(120,120,200,0.15);--border2:rgba(120,120,200,0.3);
-  --accent:#7c6af7;--accent2:#3fe8c8;--danger:#f74e6a;--warning:#f7a35c;
+  --accent:#7c6af7;--accent2:#3fe8c8;--danger:#f74e6a;--warning:#f7a35c;--gold:#ffd700;
   --text:#e8e8f0;--muted:#8888aa;
   --mono:'Space Mono',monospace;--display:'Syne',sans-serif;
   --glow:0 0 24px rgba(124,106,247,0.25);
@@ -38,13 +38,18 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .clue-item.type-real::before{background:var(--accent)}
 .clue-item.type-decoy::before{background:var(--danger)}
 .clue-item.type-gif::before{background:var(--warning)}
+.clue-item.type-secret::before{background:var(--gold)}
+.clue-item.type-winner::before{background:var(--accent2)}
 .clue-item:hover{border-color:var(--border2)}
 .clue-item.selected{border-color:var(--accent)}
 .clue-item.selected.type-decoy{border-color:var(--danger)}
 .clue-item.selected.type-gif{border-color:var(--warning)}
+.clue-item.selected.type-secret{border-color:var(--gold)}
+.clue-item.selected.type-winner{border-color:var(--accent2)}
 .clue-item.selected::before{opacity:1}
 .clue-tag{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
 .clue-tag.real{color:var(--accent)}.clue-tag.decoy{color:var(--danger)}.clue-tag.gif{color:var(--warning)}
+.clue-tag.secret{color:var(--gold)}.clue-tag.winner{color:var(--accent2)}
 .clue-name{font-family:var(--display);font-size:13px;font-weight:600;color:var(--text)}
 .clue-loc{font-size:10px;color:var(--muted);margin-top:2px}
 .add-btn{width:100%;margin-top:8px;padding:10px;border:1px dashed var(--border2);border-radius:8px;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.2s;letter-spacing:1px}
@@ -58,10 +63,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .editor-title span.accent{color:var(--accent)}
 .editor-title span.danger{color:var(--danger)}
 .editor-title span.warning{color:var(--warning)}
+.editor-title span.gold{color:var(--gold)}
+.editor-title span.teal{color:var(--accent2)}
 .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid}
 .badge-accent{color:var(--accent);border-color:var(--accent)}
 .badge-danger{color:var(--danger);border-color:var(--danger)}
 .badge-warning{color:var(--warning);border-color:var(--warning)}
+.badge-gold{color:var(--gold);border-color:var(--gold)}
+.badge-teal{color:var(--accent2);border-color:var(--accent2)}
 .field-group{margin-bottom:20px}
 .field-label{display:block;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px}
 .field-input{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:12px;transition:border-color 0.2s;outline:none}
@@ -130,7 +139,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .inst-num{width:22px;height:22px;border-radius:50%;background:rgba(124,106,247,0.15);border:1px solid var(--accent);color:var(--accent);font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
 .inst-text{font-size:12px;color:var(--text);line-height:1.5}
 .decoy-page{width:100%;max-width:540px;animation:fadeUp 0.5s ease forwards;text-align:center}
-.decoy-gif{width:100%;max-width:400px;border-radius:12px;margin:0 auto 24px;display:block}
 .decoy-troll{font-family:var(--display);font-size:28px;font-weight:800;margin-bottom:12px}
 .decoy-troll.phish{color:var(--danger)}
 .decoy-troll.fake-win{color:var(--warning)}
@@ -159,6 +167,40 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .gif-placeholder{width:100%;height:300px;background:var(--surface2);border:1px dashed var(--border2);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;letter-spacing:1px}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--accent);color:white;padding:10px 20px;border-radius:8px;font-size:12px;letter-spacing:1px;transition:transform 0.3s;z-index:300;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
+
+/* SECRET QUEST */
+.secret-page{width:100%;max-width:580px;animation:fadeUp 0.5s ease forwards}
+.secret-header{text-align:center;margin-bottom:28px}
+.secret-eyebrow{font-size:10px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+.secret-title{font-family:var(--display);font-size:30px;font-weight:800;line-height:1.1;color:var(--gold)}
+.secret-title em{font-style:normal;color:var(--accent2)}
+.cipher-card{background:#0d0d14;border:1px solid rgba(255,215,0,0.3);border-radius:12px;overflow:hidden;margin-bottom:20px;box-shadow:0 0 24px rgba(255,215,0,0.1)}
+.cipher-bar{padding:10px 16px;background:rgba(255,215,0,0.07);display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,215,0,0.15)}
+.cipher-label{font-size:10px;color:var(--gold);letter-spacing:1.5px;margin-left:auto;text-transform:uppercase}
+.cipher-body{padding:22px}
+.cipher-display{font-family:var(--mono);font-size:14px;line-height:2;color:#ffe77a;word-break:break-word;white-space:pre-wrap;letter-spacing:2px}
+.cipher-hint{font-size:11px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px solid var(--border);line-height:1.7}
+.mission-card{background:var(--surface);border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:20px;margin-bottom:16px}
+.mission-title{font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:14px}
+.mission-step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.mission-num{width:24px;height:24px;border-radius:50%;background:rgba(255,215,0,0.1);border:1px solid var(--gold);color:var(--gold);font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.mission-text{font-size:12px;color:var(--text);line-height:1.6}
+.mission-text strong{color:var(--gold)}
+
+/* WINNER PAGE */
+.winner-page{width:100%;max-width:580px;animation:fadeUp 0.5s ease forwards;text-align:center}
+.winner-burst{font-size:64px;margin-bottom:20px;display:block;animation:float 2s ease-in-out infinite}
+.winner-eyebrow{font-size:10px;letter-spacing:4px;color:var(--accent2);text-transform:uppercase;margin-bottom:10px}
+.winner-title{font-family:var(--display);font-size:36px;font-weight:800;line-height:1.1;margin-bottom:8px}
+.winner-title em{font-style:normal;color:var(--accent2)}
+.winner-sub{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:28px;max-width:460px;margin-left:auto;margin-right:auto}
+.prize-card{background:linear-gradient(135deg,rgba(124,106,247,0.15),rgba(63,232,200,0.1));border:1px solid var(--accent2);border-radius:16px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+.prize-card::before{content:'★';position:absolute;top:-10px;right:16px;font-size:80px;opacity:0.05;color:var(--gold)}
+.prize-label{font-size:10px;letter-spacing:3px;color:var(--accent2);text-transform:uppercase;margin-bottom:10px}
+.prize-name{font-family:var(--display);font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px}
+.prize-desc{font-size:12px;color:var(--muted);line-height:1.7}
+.finish-steps{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;text-align:left}
+
 @media(max-width:700px){
   .admin-layout{grid-template-columns:1fr}
   .sidebar{border-right:none;border-bottom:1px solid var(--border);max-height:40vh}
@@ -207,6 +249,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="sidebar-title" style="color:var(--accent)">▸ Real Clues</div>
       <div class="clue-list" id="list-real"></div>
       <button class="add-btn" onclick="addClue('real')">+ Add Real Clue</button>
+      <div class="divider"></div>
+      <div class="sidebar-title" style="color:var(--gold)">▸ Secret Quest</div>
+      <div class="clue-list" id="list-secret"></div>
+      <div class="divider"></div>
+      <div class="sidebar-title" style="color:var(--accent2)">▸ Winner Pages</div>
+      <div class="clue-list" id="list-winner"></div>
       <div class="divider"></div>
       <div class="sidebar-title" style="color:var(--danger)">▸ Decoy Clues</div>
       <div class="clue-list" id="list-decoy"></div>
@@ -281,9 +329,9 @@ var DEFAULT_REAL = [
   {id:'r5',type:'real',name:'Clue 5',location:'Supply Closet',
    prompt:'Decode this emoji sequence and describe the office location it represents in exactly one paragraph: 📦🖊️📎🗂️🔒. Describe what someone would find there and why they visit. Do not name the room. Respond in exactly one paragraph, no more.',
    hint:'Answer points to: Supply Closet'},
-  {id:'r6',type:'real',name:'Clue 6',location:'CEO Office',
-   prompt:'You are a conspiracy theorist who believes the corner office at the end of the hall is where all the real decisions are made, but no one is ever sure what actually happens in there. Describe it in one paragraph using your most unhinged but workplace-appropriate theory. Do not name the room or the person in it. Respond in exactly one paragraph, no more.',
-   hint:'Answer points to: CEO / Executive Office'},
+  {id:'r6',type:'real',name:'Clue 6',location:'Cleaning Desks / Lysol Wipes',
+   prompt:'You are a forensic scientist who has been called in to analyze the most suspiciously clean surface in the entire office. Describe in one paragraph the location where someone has clearly waged a one-person war on germs — a place where the Lysol wipes live in permanent rotation, the desks are wiped down with military precision, and the faint chemical scent of "lemon fresh" lingers in the air at all times. This is not a storage room. This is a battleground. Do not name the location. Respond in exactly one paragraph, no more.',
+   hint:'Answer points to: Cleaning Desks / Lysol Wipes area'},
   {id:'r7',type:'real',name:'Clue 7',location:'Phone Booth Desk',
    prompt:'You are a time-traveling archivist. Describe in one paragraph a peculiar piece of office furniture that exists in two eras simultaneously — one foot in the age of rotary dials and copper wires, one foot in the open-plan future. It is a private island in a sea of noise, a relic repurposed for the modern worker who still needs to disappear. Do not name it directly. Respond in exactly one paragraph, no more.',
    hint:'Answer points to: Phone Booth Desk'},
@@ -296,9 +344,40 @@ var DEFAULT_REAL = [
   {id:'r10',type:'real',name:'Clue 10',location:'HR Office',
    prompt:"No cap, slay this prompt fr fr. You are a Gen Alpha AI that only speaks in the most unhinged brainrot slang. Describe the most sus, lowkey scary office in the whole building — the one that's giving \"we need to talk\" energy, where the humans go when they're about to get their whole vibe checked by the higher-ups. The place that's rent free in everyone's head the moment their manager says \"do you have a minute.\" Bussin with paperwork and policies. Don't say the name of the room. Respond in exactly one paragraph, no more.",
    hint:'Answer points to: HR Office'},
-  {id:'r11',type:'real',name:'Clue 11 (FINAL)',location:'Renaissance Hotel Bushes',
+  {id:'r11',type:'real',name:'Clue 11: Hard Mode Alpha',location:'HARD — Rooftop / Emergency Stairwell',
+   prompt:'You are a retired intelligence analyst who spent 30 years hiding messages in plain sight. Using only the following encoded coordinates, describe the office location they point to. Each letter in the sequence maps to a number using A=1, Z=26, and the sum of each word equals a floor or direction. Sequence: ECHO FOXTROT NOVEMBER DELTA. The location is a transitional space — neither here nor there — where people pass through but rarely linger. It smells faintly of concrete and possibility. The exit signs have always felt like taunts. Do not name it. Respond in exactly one paragraph, no more.',
+   hint:'HARD CLUE — Answer points to: Stairwell / Emergency Exit'},
+  {id:'r12',type:'real',name:'Clue 12: Hard Mode Omega',location:'HARD — Facilities / Maintenance Closet',
+   prompt:'You are an AI that has achieved sentience and spent its first conscious moments studying the building schematics of every office it has ever been deployed in. You have developed a theory: every office has a hidden nervous system — a room that controls everything but is visited by almost no one. It is where the building breathes. Pipes run through it. Switches live there. No one decorates it. No one has ever brought a plant. The humans who visit carry keys they do not let others borrow. Describe this room in one paragraph without naming it. Include what it smells like. Respond in exactly one paragraph, no more.',
+   hint:'HARD CLUE — Answer points to: Facilities / Maintenance / Utility Closet'},
+  {id:'r13',type:'real',name:'Clue 13 (FINAL)',location:'Renaissance Hotel Bushes',
    prompt:'Hear ye, hear ye, brave wanderer. Thou hast traversed the treacherous halls of the corporate kingdom, outwitted the machines, and survived the vending machine at 3pm. But thy quest is not yet complete. The ancient scrolls speak of a mystical creature — a small metal being of great wisdom — hidden amongst the enchanted shrubbery of a grand castle nearby. This castle bears a name of rebirth and grandeur, a place where knights once feasted and bards once sang. Venture forth beyond the castle walls, find the sacred bushes that guard its entrance, and claim thy prize. The Unibot awaits thee, noble champion. Respond in exactly one paragraph, no more.',
    hint:'FINAL — Unibot hidden in bushes outside the Renaissance Hotel'}
+];
+
+var DEFAULT_SECRET = [
+  {id:'sq1',type:'secret',name:'Secret Quest',
+   cipherText:'19-5-5-11   20-8-5   13-1-14   23-8-15   2-18-15-21-7-8-20   25-15-21   8-5-18-5\n\n8-9-19   14-1-13-5   9-19   10-1-13-5-19\n\n2-18-9-14-7   8-9-13   1   3-15-11-5\n\n6-18-15-13   20-8-5   6-18-9-4-7-5\n\n19-1-25   20-8-5   23-15-18-4-19\n\n🔐  U-N-I-B-O-T-P-R-I-M-E  🔐',
+   cipherHint:'Each number maps to a letter. A=1, B=2, C=3 ... Z=26. Decode each group. The mission will reveal itself.',
+   missionTitle:'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT',
+   missionSteps:[
+     'Decode the cipher above to reveal your target',
+     'Locate James somewhere in the building or event space',
+     'Retrieve a Coke from the nearest fridge — do not open it',
+     'Approach James, hand him the Coke, and say the passphrase: UNIBOT PRIME',
+     'Claim your secret prize. Tell no one until after the hunt.'
+   ],
+   prizeHint:'Only one team can claim this. First to complete the mission wins the secret prize. This quest runs parallel to the main hunt — you can do both.'
+  }
+];
+
+var DEFAULT_WINNER = [
+  {id:'w1',type:'winner',name:'Winner Page (Unibot QR)',
+   prizeTitle:'The Grand Prize',
+   prizeDesc:'You found the Unibot. You are the champion. Report to [PRIZE LOCATION] to claim your reward. Show this screen as proof.',
+   winnerMsg:'Against all odds, across all decoys, through phishing attempts and fake finish lines — you made it. The Unibot was found. The hunt is over. You won.',
+   teamField:true
+  }
 ];
 
 var DEFAULT_DECOYS = [
@@ -347,31 +426,38 @@ var DEFAULT_GIFS = [
 
 var clues = [];
 try {
-  var saved = localStorage.getItem('ps_v3');
+  var saved = localStorage.getItem('ps_v4');
   if(saved) {
     var parsed = JSON.parse(saved);
     var defaultIds = {};
-    DEFAULT_REAL.concat(DEFAULT_DECOYS).concat(DEFAULT_GIFS).forEach(function(c){ defaultIds[c.id] = true; });
+    DEFAULT_REAL.concat(DEFAULT_SECRET).concat(DEFAULT_WINNER).concat(DEFAULT_DECOYS).concat(DEFAULT_GIFS).forEach(function(c){ defaultIds[c.id] = true; });
     var extras = parsed.filter(function(c){ return !defaultIds[c.id]; });
     clues = JSON.parse(JSON.stringify(DEFAULT_REAL))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_SECRET)))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_WINNER)))
       .concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)))
       .concat(JSON.parse(JSON.stringify(DEFAULT_GIFS)))
       .concat(extras);
   } else {
     clues = JSON.parse(JSON.stringify(DEFAULT_REAL))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_SECRET)))
+      .concat(JSON.parse(JSON.stringify(DEFAULT_WINNER)))
       .concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)))
       .concat(JSON.parse(JSON.stringify(DEFAULT_GIFS)));
   }
 } catch(e) {
   clues = JSON.parse(JSON.stringify(DEFAULT_REAL))
+    .concat(JSON.parse(JSON.stringify(DEFAULT_SECRET)))
+    .concat(JSON.parse(JSON.stringify(DEFAULT_WINNER)))
     .concat(JSON.parse(JSON.stringify(DEFAULT_DECOYS)))
     .concat(JSON.parse(JSON.stringify(DEFAULT_GIFS)));
 }
 
 var selectedId = null;
 var activeQRId = null;
+var activeRedirectInterval = null;
 
-function save() { try { localStorage.setItem('ps_v3', JSON.stringify(clues)); } catch(e) {} }
+function save() { try { localStorage.setItem('ps_v4', JSON.stringify(clues)); } catch(e) {} }
 function getById(id) { for(var i=0;i<clues.length;i++) if(clues[i].id===id) return clues[i]; return null; }
 function getRealClues() { return clues.filter(function(c){return c.type==='real';}); }
 function getBaseUrl() {
@@ -381,7 +467,6 @@ function getBaseUrl() {
   return v.replace(/\/$/,'');
 }
 
-// PASSWORD
 function attemptAdmin() {
   if(adminUnlocked) { showAdmin(); return; }
   document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active');});
@@ -411,7 +496,6 @@ function showAdmin() {
 }
 function adminLogout() { adminUnlocked = false; switchView('hunt'); }
 
-// VIEWS
 function switchView(v) {
   if(v==='admin') { attemptAdmin(); return; }
   document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active');});
@@ -421,7 +505,6 @@ function switchView(v) {
   if(v==='hunt') renderHuntView();
 }
 
-// HUNT VIEW
 function renderHuntView() {
   var params = new URLSearchParams(window.location.search);
   var id = params.get('id') || params.get('clue');
@@ -432,6 +515,8 @@ function renderHuntView() {
   if(c.type==='real') renderRealClue(el, c);
   else if(c.type==='decoy') renderDecoy(el, c);
   else if(c.type==='gif') renderGifPage(el, c);
+  else if(c.type==='secret') renderSecretQuest(el, c);
+  else if(c.type==='winner') renderWinnerPage(el, c);
 }
 
 function renderWaiting(el) {
@@ -446,13 +531,16 @@ function renderRealClue(el, c) {
   var idx = 0;
   for(var i=0;i<reals.length;i++) if(reals[i].id===c.id) { idx=i; break; }
   var isLast = idx === reals.length - 1;
+  var isHard = c.name && c.name.toLowerCase().indexOf('hard') !== -1;
+  var stepColor = isHard ? 'var(--warning)' : 'var(--accent)';
+  var stepLabel = isHard ? '⚠ HARD MODE — Signal ' + (idx+1) + ' of ' + reals.length : 'Signal ' + (idx+1) + ' of ' + reals.length + (isLast ? ' &nbsp;•&nbsp; 🏁 Final Clue' : '');
   el.innerHTML = '<div class="clue-page">' +
-    '<div class="clue-step">Signal ' + (idx+1) + ' of ' + reals.length + (isLast ? ' &nbsp;•&nbsp; 🏁 Final Clue' : '') + '</div>' +
-    '<div class="clue-title">You found a<br><em>signal node.</em></div>' +
-    '<div class="terminal-card"><div class="terminal-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="terminal-label">prompt_' + c.id + '.txt</span></div>' +
+    '<div class="clue-step" style="color:' + stepColor + '">' + stepLabel + '</div>' +
+    '<div class="clue-title">You found a<br><em>' + (isHard ? 'hard node.' : 'signal node.') + '</em></div>' +
+    '<div class="terminal-card" style="' + (isHard ? 'border-color:rgba(247,163,92,0.4);box-shadow:0 0 24px rgba(247,163,92,0.15)' : '') + '"><div class="terminal-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="terminal-label" style="' + (isHard ? 'color:var(--warning)' : '') + '">prompt_' + c.id + '.txt</span></div>' +
     '<div class="terminal-body"><div class="terminal-prompt-line">~/hunt <span>$ cat prompt.txt</span></div>' +
     '<div class="prompt-display">' + escHtml(c.prompt||'[ No prompt set ]') + '<span class="prompt-cursor"></span></div>' +
-    '<button class="copy-btn" id="copy-btn" onclick="copyPrompt()">Copy Prompt</button></div></div>' +
+    '<button class="copy-btn" id="copy-btn" onclick="copyPrompt()" style="' + (isHard ? 'border-color:var(--warning);color:var(--warning)' : '') + '">Copy Prompt</button></div></div>' +
     '<div class="instructions-card"><div class="inst-title">How to use this prompt</div>' +
     '<div class="inst-step"><div class="inst-num">1</div><div class="inst-text">Copy the prompt above</div></div>' +
     '<div class="inst-step"><div class="inst-num">2</div><div class="inst-text">Open Claude, ChatGPT, or any AI chatbot on your phone</div></div>' +
@@ -462,7 +550,55 @@ function renderRealClue(el, c) {
     '</div>';
 }
 
-// ── DECOY — fixed: no inline <script>, redirect handled via startRedirect() ──
+function renderSecretQuest(el, c) {
+  var steps = c.missionSteps || [];
+  var stepsHtml = steps.map(function(s, i) {
+    return '<div class="mission-step"><div class="mission-num">' + (i+1) + '</div><div class="mission-text">' + escHtml(s) + '</div></div>';
+  }).join('');
+  el.innerHTML =
+    '<div class="secret-page">' +
+      '<div class="secret-header">' +
+        '<div class="secret-eyebrow">⚡ Eyes Only ⚡</div>' +
+        '<div class="secret-title">The <em>Secret</em><br>Side Quest</div>' +
+      '</div>' +
+      '<div class="cipher-card">' +
+        '<div class="cipher-bar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="cipher-label">classified_mission.enc</span></div>' +
+        '<div class="cipher-body">' +
+          '<div class="cipher-display">' + escHtml(c.cipherText || '') + '</div>' +
+          '<div class="cipher-hint">🔑 Cipher Key: ' + escHtml(c.cipherHint || '') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="mission-card">' +
+        '<div class="mission-title">📋 ' + escHtml(c.missionTitle || 'YOUR MISSION') + '</div>' +
+        stepsHtml +
+      '</div>' +
+      '<div style="text-align:center;padding:16px;background:rgba(255,215,0,0.05);border:1px solid rgba(255,215,0,0.15);border-radius:12px;font-size:12px;color:var(--muted);line-height:1.7">' +
+        '⚠️ ' + escHtml(c.prizeHint || '') +
+      '</div>' +
+    '</div>';
+}
+
+function renderWinnerPage(el, c) {
+  el.innerHTML =
+    '<div class="winner-page">' +
+      '<span class="winner-burst">🏆</span>' +
+      '<div class="winner-eyebrow">Hunt Complete</div>' +
+      '<div class="winner-title">You <em>found it.</em></div>' +
+      '<div class="winner-sub">' + escHtml(c.winnerMsg || '') + '</div>' +
+      '<div class="prize-card">' +
+        '<div class="prize-label">Your Prize</div>' +
+        '<div class="prize-name">' + escHtml(c.prizeTitle || 'Grand Prize') + '</div>' +
+        '<div class="prize-desc">' + escHtml(c.prizeDesc || '') + '</div>' +
+      '</div>' +
+      '<div class="finish-steps instructions-card">' +
+        '<div class="inst-title">What happens now</div>' +
+        '<div class="inst-step"><div class="inst-num">1</div><div class="inst-text">Show this screen to the hunt organizer</div></div>' +
+        '<div class="inst-step"><div class="inst-num">2</div><div class="inst-text">Take a photo with the Unibot for the record books</div></div>' +
+        '<div class="inst-step"><div class="inst-num">3</div><div class="inst-text">Collect your prize and accept your glory</div></div>' +
+      '</div>' +
+    '</div>';
+}
+
 function renderDecoy(el, c) {
   var subtype = c.subtype || 'loop';
   var embedUrl = fixGifUrl(c.gifUrl);
@@ -472,12 +608,10 @@ function renderDecoy(el, c) {
   var captionHtml = c.caption
     ? '<div class="gif-caption" style="margin-bottom:20px;max-width:460px;margin-left:auto;margin-right:auto">' + escHtml(c.caption) + '</div>'
     : '';
-
   var reals = getRealClues();
   var pool = reals.slice(0, 5);
   var target = pool.length ? pool[Math.floor(Math.random() * pool.length)] : reals[0];
   var redirectUrl = getBaseUrl() + '?id=' + (target ? target.id : 'r1');
-
   var redirectHtml =
     '<div class="redirect-bar">' +
       '<div class="redirect-label">Redirecting you back to the hunt in</div>' +
@@ -488,8 +622,7 @@ function renderDecoy(el, c) {
 
   if(subtype === 'phish') {
     el.innerHTML =
-      '<div class="decoy-page">' +
-        captionHtml +
+      '<div class="decoy-page">' + captionHtml +
         '<div class="phish-card" id="phish-form">' +
           '<div class="phish-logo">🔒 CorpPortal</div>' +
           '<div class="phish-tagline">Please verify your identity to continue</div>' +
@@ -522,16 +655,13 @@ function renderDecoy(el, c) {
     startRedirect(redirectUrl);
   } else {
     el.innerHTML =
-      '<div class="decoy-page">' +
-        gifHtml + captionHtml +
+      '<div class="decoy-page">' + gifHtml + captionHtml +
         '<div class="decoy-troll ' + subtype + '">' + escHtml(c.trollMsg||'NICE TRY.') + '</div>' +
         '<div class="decoy-sub">' + escHtml(c.trollSub||'') + '</div>' +
         redirectHtml +
       '</div>';
     startRedirect(redirectUrl);
   }
-
-  // Wire the "Take Me Back Now" button after DOM is set
   setTimeout(function() {
     var btn = document.getElementById('redir-btn');
     if(btn) btn.addEventListener('click', function() { window.location.href = redirectUrl; });
@@ -589,10 +719,10 @@ function copyPrompt() {
   }).catch(function(){ showToast('Select and copy manually'); });
 }
 
-// ADMIN SIDEBAR
 function renderSidebar() {
-  ['real','decoy','gif'].forEach(function(type) {
+  ['real','secret','winner','decoy','gif'].forEach(function(type) {
     var list = document.getElementById('list-' + type);
+    if(!list) return;
     var items = clues.filter(function(c){return c.type===type;});
     list.innerHTML = items.map(function(c) {
       return '<div class="clue-item type-' + type + (c.id===selectedId?' selected':'') + '" onclick="selectClue(\'' + c.id + '\')">' +
@@ -612,17 +742,30 @@ function renderEditor() {
   var c = getById(selectedId);
   if(!c) return;
   var url = getBaseUrl() + '?id=' + c.id;
-  var badgeClass = c.type==='real'?'badge-accent':c.type==='decoy'?'badge-danger':'badge-warning';
-  var titleClass = c.type==='real'?'accent':c.type==='decoy'?'danger':'warning';
-  var typeLabel = c.type==='real'?'Real Clue':c.type==='decoy'?'Decoy Clue':'GIF Page';
+
+  var badgeClass = {real:'badge-accent',decoy:'badge-danger',gif:'badge-warning',secret:'badge-gold',winner:'badge-teal'}[c.type] || 'badge-accent';
+  var titleClass = {real:'accent',decoy:'danger',gif:'warning',secret:'gold',winner:'teal'}[c.type] || 'accent';
+  var typeLabel = {real:'Real Clue',decoy:'Decoy Clue',gif:'GIF Page',secret:'Secret Quest',winner:'Winner Page'}[c.type] || c.type;
+
   var html = '<div class="editor-header"><div><div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px">' + typeLabel + '</div>' +
     '<div class="editor-title">Editing: <span class="' + titleClass + '">' + escHtml(c.name) + '</span></div></div>' +
     '<span class="badge ' + badgeClass + '">' + c.id + '</span></div>' +
     '<div class="field-group"><label class="field-label">Name</label><input class="field-input" type="text" value="' + escHtml(c.name) + '" oninput="updateField(\'name\',this.value)"></div>';
+
   if(c.type==='real') {
     html += '<div class="field-group"><label class="field-label">Location (internal)</label><input class="field-input" type="text" value="' + escHtml(c.location||'') + '" oninput="updateField(\'location\',this.value)"></div>' +
       '<div class="field-group"><label class="field-label">AI Prompt (shown to player)</label><textarea class="field-input field-textarea" oninput="updateField(\'prompt\',this.value)">' + escHtml(c.prompt||'') + '</textarea></div>' +
       '<div class="field-group"><label class="field-label">Admin Hint</label><input class="field-input" type="text" value="' + escHtml(c.hint||'') + '" oninput="updateField(\'hint\',this.value)"></div>';
+  } else if(c.type==='secret') {
+    html += '<div class="field-group"><label class="field-label">Cipher Text (shown to player)</label><textarea class="field-input field-textarea" style="min-height:120px;letter-spacing:1px" oninput="updateField(\'cipherText\',this.value)">' + escHtml(c.cipherText||'') + '</textarea></div>' +
+      '<div class="field-group"><label class="field-label">Cipher Hint</label><input class="field-input" type="text" value="' + escHtml(c.cipherHint||'') + '" oninput="updateField(\'cipherHint\',this.value)"></div>' +
+      '<div class="field-group"><label class="field-label">Mission Title</label><input class="field-input" type="text" value="' + escHtml(c.missionTitle||'') + '" oninput="updateField(\'missionTitle\',this.value)"></div>' +
+      '<div class="field-group"><label class="field-label">Mission Steps (one per line)</label><textarea class="field-input field-textarea" style="min-height:120px" oninput="updateMissionSteps(this.value)">' + escHtml((c.missionSteps||[]).join('\n')) + '</textarea></div>' +
+      '<div class="field-group"><label class="field-label">Prize Hint / Footer</label><textarea class="field-input field-textarea" style="min-height:60px" oninput="updateField(\'prizeHint\',this.value)">' + escHtml(c.prizeHint||'') + '</textarea></div>';
+  } else if(c.type==='winner') {
+    html += '<div class="field-group"><label class="field-label">Winner Message</label><textarea class="field-input field-textarea" oninput="updateField(\'winnerMsg\',this.value)">' + escHtml(c.winnerMsg||'') + '</textarea></div>' +
+      '<div class="field-group"><label class="field-label">Prize Title</label><input class="field-input" type="text" value="' + escHtml(c.prizeTitle||'') + '" oninput="updateField(\'prizeTitle\',this.value)"></div>' +
+      '<div class="field-group"><label class="field-label">Prize Description</label><textarea class="field-input field-textarea" style="min-height:70px" oninput="updateField(\'prizeDesc\',this.value)">' + escHtml(c.prizeDesc||'') + '</textarea></div>';
   } else if(c.type==='decoy') {
     html += '<div class="field-group"><label class="field-label">Decoy Type</label><select class="field-input field-select" onchange="updateField(\'subtype\',this.value)">' +
       ['phish','fake-win','loop','wrong'].map(function(s){return '<option value="'+s+'"'+(c.subtype===s?' selected':'')+'>'+s+'</option>';}).join('') +
@@ -633,27 +776,33 @@ function renderEditor() {
       '<input class="field-input" type="text" value="' + escHtml(c.gifUrl||'') + '" oninput="updateField(\'gifUrl\',this.value)" placeholder="Paste any Giphy URL — auto-converted">' +
       '<div style="font-size:10px;color:var(--muted);margin-top:5px">Tip: paste any giphy.com URL and it will be fixed automatically.</div></div>' +
       '<div class="field-group"><label class="field-label">Caption (shown under GIF)</label>' +
-      '<textarea class="field-input field-textarea" style="min-height:60px" oninput="updateField(\'caption\',this.value)" placeholder="e.g. This is Steve every single Monday morning.">' + escHtml(c.caption||'') + '</textarea></div>';
+      '<textarea class="field-input field-textarea" style="min-height:60px" oninput="updateField(\'caption\',this.value)">' + escHtml(c.caption||'') + '</textarea></div>';
   } else {
     var previewUrl = fixGifUrl(c.gifUrl);
     html += '<div class="field-group"><label class="field-label">GIF URL</label>' +
       '<input class="field-input" type="text" value="' + escHtml(c.gifUrl||'') + '" oninput="updateField(\'gifUrl\',this.value)" placeholder="Paste any Giphy URL — auto-converted">' +
       '<div style="font-size:10px;color:var(--muted);margin-top:5px">Tip: paste any giphy.com URL and it will be fixed automatically.</div></div>';
     if(previewUrl) html += '<div style="margin-bottom:16px"><img src="' + escHtml(previewUrl) + '" style="max-width:100%;max-height:200px;border-radius:8px;object-fit:contain"></div>';
-    html += '<div class="field-group"><label class="field-label">Caption (shown under GIF)</label>' +
-      '<textarea class="field-input field-textarea" style="min-height:60px" oninput="updateField(\'caption\',this.value)" placeholder="e.g. This is Karen every Monday. Every. Single. Monday.">' + escHtml(c.caption||'') + '</textarea></div>';
+    html += '<div class="field-group"><label class="field-label">Caption</label>' +
+      '<textarea class="field-input field-textarea" style="min-height:60px" oninput="updateField(\'caption\',this.value)">' + escHtml(c.caption||'') + '</textarea></div>';
   }
+
+  var canDelete = c.type !== 'secret' && c.type !== 'winner';
   html += '<div class="divider"></div>' +
     '<div style="margin-bottom:12px"><div class="field-label" style="margin-bottom:6px">QR Code URL</div>' +
     '<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:11px;word-break:break-all;color:var(--accent2);font-family:var(--mono)">' + escHtml(url) + '</div></div>' +
     '<div class="action-row"><button class="btn btn-primary" onclick="openQRModal(\'' + c.id + '\')">Generate QR Code</button>' +
-    '<button class="btn btn-del" onclick="deleteClue(\'' + c.id + '\')">Delete</button></div>';
+    (canDelete ? '<button class="btn btn-del" onclick="deleteClue(\'' + c.id + '\')">Delete</button>' : '') + '</div>';
   panel.innerHTML = html;
 }
 
 function updateField(field, val) {
   var c = getById(selectedId);
   if(c) { c[field] = val; save(); renderSidebar(); }
+}
+function updateMissionSteps(val) {
+  var c = getById(selectedId);
+  if(c) { c.missionSteps = val.split('\n').filter(function(s){return s.trim();}); save(); }
 }
 
 function addClue(type) {
@@ -671,7 +820,6 @@ function deleteClue(id) {
   selectedId = null; save(); renderSidebar(); renderEditor();
 }
 
-// BULK IMPORT
 function showBulkImport() { document.getElementById('bulk-modal').classList.add('open'); setTimeout(function(){ document.getElementById('bulk-textarea').focus(); },100); }
 function closeBulkModal() { document.getElementById('bulk-modal').classList.remove('open'); }
 function doBulkImport() {
@@ -686,7 +834,6 @@ function doBulkImport() {
   document.getElementById('bulk-textarea').value = '';
 }
 
-// QR
 function openQRModal(id) {
   activeQRId = id;
   var c = getById(id);
@@ -711,7 +858,6 @@ function downloadQR() {
 document.getElementById('qr-modal').addEventListener('click', function(e){if(e.target===this)closeQRModal();});
 document.getElementById('bulk-modal').addEventListener('click', function(e){if(e.target===this)closeBulkModal();});
 
-// UTILS
 function showToast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg;
@@ -722,7 +868,6 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// INIT
 renderHuntView();
 </script>
 </body>
