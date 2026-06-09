@@ -270,6 +270,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <input class="field-input" id="base-url-input" type="text" placeholder="https://steelejamesp.github.io/OMPrompt-and-Seek" value="https://steelejamesp.github.io/OMPrompt-and-Seek" oninput="renderEditor()">
       <div style="margin-top:12px">
         <button class="btn btn-secondary" style="width:100%;font-size:10px" onclick="adminLogout()">🔒 Lock Admin</button>
+        <button class="btn btn-primary" style="width:100%;font-size:10px;margin-top:6px;background:var(--accent2);color:#0a0a0f" onclick="exportHTML()">⬇ Download Updated Site</button>
+        <div style="font-size:9px;color:var(--muted);margin-top:6px;line-height:1.6;text-align:center">Bakes your current edits into a new index.html — push it to GitHub to deploy.</div>
       </div>
     </aside>
     <main class="editor" id="editor-panel">
@@ -344,9 +346,9 @@ var DEFAULT_REAL = [
   {id:'r10',type:'real',name:'Clue 10',location:'HR Office',
    prompt:"No cap, slay this prompt fr fr. You are a Gen Alpha AI that only speaks in the most unhinged brainrot slang. Describe the most sus, lowkey scary office in the whole building — the one that's giving \"we need to talk\" energy, where the humans go when they're about to get their whole vibe checked by the higher-ups. The place that's rent free in everyone's head the moment their manager says \"do you have a minute.\" Bussin with paperwork and policies. Don't say the name of the room. Respond in exactly one paragraph, no more.",
    hint:'Answer points to: HR Office'},
-  {id:'r11',type:'real',name:'Clue 11: Hard Mode Alpha',location:'HARD — Rooftop / Emergency Stairwell',
-   prompt:'You are a retired intelligence analyst who spent 30 years hiding messages in plain sight. Using only the following encoded coordinates, describe the office location they point to. Each letter in the sequence maps to a number using A=1, Z=26, and the sum of each word equals a floor or direction. Sequence: ECHO FOXTROT NOVEMBER DELTA. The location is a transitional space — neither here nor there — where people pass through but rarely linger. It smells faintly of concrete and possibility. The exit signs have always felt like taunts. Do not name it. Respond in exactly one paragraph, no more.',
-   hint:'HARD CLUE — Answer points to: Stairwell / Emergency Exit'},
+  {id:'r11',type:'real',name:'Clue 11: Hard Mode Alpha',location:'Behind TV — Customer Break Room',
+   prompt:'You are an interior designer who has been hired to roast the most passive-aggressive placement of technology in any office you have ever visited. Describe in one paragraph a room where someone clearly wanted people to relax, but also made sure they could never fully escape the glowing rectangle. The screen dominates. Behind it, the wall holds secrets — or at least, things people have shoved back there and forgotten. The furniture suggests leisure. The vibe suggests surveillance. Do not name the room. Respond in exactly one paragraph, no more.',
+   hint:'HARD CLUE — Answer points to: Behind the TV in the Customer Break Room'},
   {id:'r12',type:'real',name:'Clue 12: Hard Mode Omega',location:'HARD — Facilities / Maintenance Closet',
    prompt:'You are an AI that has achieved sentience and spent its first conscious moments studying the building schematics of every office it has ever been deployed in. You have developed a theory: every office has a hidden nervous system — a room that controls everything but is visited by almost no one. It is where the building breathes. Pipes run through it. Switches live there. No one decorates it. No one has ever brought a plant. The humans who visit carry keys they do not let others borrow. Describe this room in one paragraph without naming it. Include what it smells like. Respond in exactly one paragraph, no more.',
    hint:'HARD CLUE — Answer points to: Facilities / Maintenance / Utility Closet'},
@@ -866,6 +868,62 @@ function showToast(msg) {
 }
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// EXPORT — bakes current clue data into a fresh index.html download
+function exportHTML() {
+  // Grab the full page source
+  var src = document.documentElement.outerHTML;
+
+  // Serialise each live array to indented JSON-ish JS
+  function serialiseArray(arr) {
+    return JSON.stringify(arr, null, 2)
+      // JSON uses double quotes everywhere; convert outer key quotes to unquoted where safe
+      .replace(/"([a-zA-Z_][a-zA-Z0-9_]*)"\s*:/g, '$1:')
+      // Wrap in var declaration brackets — we'll splice it in below
+      ;
+  }
+
+  function replaceArray(source, varName, newData) {
+    // Match:  var VARNAME = [ ... ];
+    // The array may span many lines, so we match lazily up to the closing ];\n
+    var pattern = new RegExp(
+      '(var ' + varName + ' = \\[)[\\s\\S]*?(\\];)',
+      ''
+    );
+    var serialised = serialiseArray(newData);
+    // serialised is just the [...] part — strip outer [] and re-wrap
+    return source.replace(pattern, 'var ' + varName + ' = ' + serialised + ';');
+  }
+
+  // Separate clues back into their typed arrays
+  var realClues   = clues.filter(function(c){ return c.type === 'real';   });
+  var secretClues = clues.filter(function(c){ return c.type === 'secret'; });
+  var winnerClues = clues.filter(function(c){ return c.type === 'winner'; });
+  var decoyClues  = clues.filter(function(c){ return c.type === 'decoy';  });
+  var gifClues    = clues.filter(function(c){ return c.type === 'gif';    });
+
+  src = replaceArray(src, 'DEFAULT_REAL',   realClues);
+  src = replaceArray(src, 'DEFAULT_SECRET', secretClues);
+  src = replaceArray(src, 'DEFAULT_WINNER', winnerClues);
+  src = replaceArray(src, 'DEFAULT_DECOYS', decoyClues);
+  src = replaceArray(src, 'DEFAULT_GIFS',   gifClues);
+
+  // Also clear the localStorage key so the fresh file starts clean
+  src = src.replace(
+    "localStorage.getItem('ps_v4')",
+    "null /* exported — defaults are baked in */"
+  );
+
+  var blob = new Blob([src], { type: 'text/html;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  showToast('Downloaded index.html — push to GitHub to deploy!');
 }
 
 renderHuntView();
