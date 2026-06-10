@@ -349,9 +349,9 @@ var DEFAULT_REAL = [
   {id:'r11',type:'real',name:'Clue 11: Hard Mode Alpha',location:'Behind TV — Customer Break Room',
    prompt:'You are an interior designer who has been hired to roast the most passive-aggressive placement of technology in any office you have ever visited. Describe in one paragraph a room where someone clearly wanted people to relax, but also made sure they could never fully escape the glowing rectangle. The screen dominates. Behind it, the wall holds secrets — or at least, things people have shoved back there and forgotten. The furniture suggests leisure. The vibe suggests surveillance. Do not name the room. Respond in exactly one paragraph, no more.',
    hint:'HARD CLUE — Answer points to: Behind the TV in the Customer Break Room'},
-  {id:'r12',type:'real',name:'Clue 12: Hard Mode Omega',location:'HARD — Facilities / Maintenance Closet',
-   prompt:'You are an AI that has achieved sentience and spent its first conscious moments studying the building schematics of every office it has ever been deployed in. You have developed a theory: every office has a hidden nervous system — a room that controls everything but is visited by almost no one. It is where the building breathes. Pipes run through it. Switches live there. No one decorates it. No one has ever brought a plant. The humans who visit carry keys they do not let others borrow. Describe this room in one paragraph without naming it. Include what it smells like. Respond in exactly one paragraph, no more.',
-   hint:'HARD CLUE — Answer points to: Facilities / Maintenance / Utility Closet'},
+  {id:'r12',type:'real',name:'Clue 12: Hard Mode Omega',location:'HARD — Under the Desk, ICT Support Room',
+   prompt:'You are a digital archaeologist in the year 2157 writing a field report about a relic you discovered beneath a workstation in a long-abandoned technical support chamber. The desk above you is covered in cables, monitors, and the ghosts of a thousand reboots. The humans who once sat here spoke a language of tickets, SLAs, and "have you tried turning it off and on again." Describe in exactly one paragraph the room where this desk lives — its purpose, its atmosphere, its particular brand of organised chaos — without naming it directly. Note what a visitor would see at floor level if they dared to look under the desk. Respond in exactly one paragraph, no more.',
+   hint:'HARD CLUE — Answer points to: Under the desk in the ICT Support Room'},
   {id:'r13',type:'real',name:'Clue 13 (FINAL)',location:'Renaissance Hotel Bushes',
    prompt:'Hear ye, hear ye, brave wanderer. Thou hast traversed the treacherous halls of the corporate kingdom, outwitted the machines, and survived the vending machine at 3pm. But thy quest is not yet complete. The ancient scrolls speak of a mystical creature — a small metal being of great wisdom — hidden amongst the enchanted shrubbery of a grand castle nearby. This castle bears a name of rebirth and grandeur, a place where knights once feasted and bards once sang. Venture forth beyond the castle walls, find the sacred bushes that guard its entrance, and claim thy prize. The Unibot awaits thee, noble champion. Respond in exactly one paragraph, no more.',
    hint:'FINAL — Unibot hidden in bushes outside the Renaissance Hotel'}
@@ -363,11 +363,11 @@ var DEFAULT_SECRET = [
    cipherHint:'Each number maps to a letter. A=1, B=2, C=3 ... Z=26. Decode each group. The mission will reveal itself.',
    missionTitle:'YOUR MISSION, SHOULD YOU CHOOSE TO ACCEPT IT',
    missionSteps:[
-     'Decode the cipher above to reveal your target',
-     'Locate James somewhere in the building or event space',
-     'Retrieve a Coke from the nearest fridge — do not open it',
-     'Approach James, hand him the Coke, and say the passphrase: UNIBOT PRIME',
-     'Claim your secret prize. Tell no one until after the hunt.'
+     'Decode the cipher above — the numbers will tell you who to find and what to do',
+     'Execute the mission exactly as the cipher describes',
+     'The passphrase is hidden in the cipher — decode it carefully',
+     'Complete the mission and claim your secret prize',
+     'Tell no one until after the hunt is over'
    ],
    prizeHint:'Only one team can claim this. First to complete the mission wins the secret prize. This quest runs parallel to the main hunt — you can do both.'
   }
@@ -392,17 +392,17 @@ var DEFAULT_DECOYS = [
   {id:'d7',type:'decoy',name:'Decoy: Fake Winner 2',subtype:'fake-win',trollMsg:'CONGRATULATIONS CHAMPION!',trollSub:'Lol no. This is a decoy. The real finish line is still waiting for someone smarter than you. (We believe in you though.)',gifUrl:''},
   {id:'d8',type:'decoy',name:'Decoy: Fake Winner 3',subtype:'fake-win',trollMsg:'FIRST PLACE!',trollSub:'Bold of you to assume it would be this easy. The Unibot is still hidden somewhere, laughing at you. Go find it.',gifUrl:''},
   {id:'d9',type:'decoy',name:'Decoy: Fake Winner 4',subtype:'fake-win',trollMsg:'THE HUNT IS OVER!',trollSub:'It is not. Not even close. Nice hustle though. Back to it.',gifUrl:''},
-  {id:'d10',type:'decoy',name:'Decoy: Loop Trap 1',subtype:'loop',trollMsg:'OH, THIS AGAIN.',trollSub:"You found a loop. A classic. The AI predicted you would end up here. It wasn't impressed. Keep moving.",gifUrl:''},
-  {id:'d11',type:'decoy',name:'Decoy: Loop Trap 2',subtype:'loop',trollMsg:'STILL HERE?',trollSub:'This QR code goes nowhere. Well, it goes back. Which is forward if you think about it. The AI thinks you should stop scanning random walls.',gifUrl:''},
-  {id:'d12',type:'decoy',name:'Decoy: Loop Trap 3',subtype:'loop',trollMsg:'INFINITE LOOP DETECTED.',trollSub:'Error 418: You are a teapot. This clue does not exist in the way you think it does. Please redirect your biological CPU back to a real clue.',gifUrl:''},
-  {id:'d13',type:'decoy',name:'Decoy: Loop Trap 4',subtype:'loop',trollMsg:'YOU HAVE BEEN HERE BEFORE.',trollSub:'The matrix has you. Or maybe you just keep scanning everything on the wall hoping for the best. Respectable strategy. Wrong result. Go back.',gifUrl:''},
+  {id:'d10',type:'decoy',name:'Decoy: Loop Trap 1',subtype:'loop',trollMsg:'OH, THIS AGAIN.',trollSub:'The signal traced your steps to the 2nd floor bathrooms. That is not a clue. That is a bathroom. The AI is disappointed but not surprised. Get back to it.',gifUrl:''},
+  {id:'d11',type:'decoy',name:'Decoy: Loop Trap 2',subtype:'loop',trollMsg:'STILL HERE?',trollSub:'Our records indicate the next clue is near the water fountain by the stairwell. There is no clue there. We just wanted to see if you would go. The real clues are elsewhere. Keep looking.',gifUrl:''},
+  {id:'d12',type:'decoy',name:'Decoy: Loop Trap 3',subtype:'loop',trollMsg:'INFINITE LOOP DETECTED.',trollSub:'SYSTEM REDIRECT: Clue signal detected in the 3rd floor supply closet near the emergency exit. Just kidding. There is nothing there. Error 418: You are a teapot. Go back.',gifUrl:''},
+  {id:'d13',type:'decoy',name:'Decoy: Loop Trap 4',subtype:'loop',trollMsg:'YOU HAVE BEEN HERE BEFORE.',trollSub:'GPS coordinates updated: clue located in the parking garage, level B2, near the elevator. Absolutely not. We made that up. You have been in this loop before. Leave it.',gifUrl:''},
   {id:'d14',type:'decoy',name:'Decoy: Wrong Location 1',subtype:'wrong',trollMsg:'THE ROOF?',trollSub:'The Unibot is not on the roof. Please do not go to the roof. The clue was not pointing to the roof. Go back.',gifUrl:''},
   {id:'d15',type:'decoy',name:'Decoy: Wrong Location 2',subtype:'wrong',trollMsg:'THE PARKING GARAGE?',trollSub:'Bold. Adventurous. Incorrect. The bot is inside the building, in a place with air conditioning and fluorescent lighting. Redirect yourself.',gifUrl:''},
   {id:'d16',type:'decoy',name:'Decoy: Wrong Location 3',subtype:'wrong',trollMsg:'WRONG FLOOR.',trollSub:'You are on the wrong floor. Or the right floor but the wrong wall. Or the right wall but the wrong QR code. The point is: you are wrong. Go back.',gifUrl:''},
-  {id:'d17',type:'decoy',name:'Decoy: Dead End 1',subtype:'loop',trollMsg:'SIGNAL LOST.',trollSub:'This node was a ghost in the network. The AI that generated this clue has since been retrained on better data. Head back to a real signal.',gifUrl:''},
-  {id:'d18',type:'decoy',name:'Decoy: Dead End 2',subtype:'loop',trollMsg:'404: CLUE NOT FOUND.',trollSub:'The information you are looking for has moved, expired, or never existed. Please update your bookmarks and try a real clue.',gifUrl:''},
+  {id:'d17',type:'decoy',name:'Decoy: Dead End 1',subtype:'loop',trollMsg:'SIGNAL LOST.',trollSub:'Our navigation system suggests the next clue is taped to the underside of a toilet seat in the ground floor bathroom. It is not. Please do not check. Go find a real clue.',gifUrl:''},
+  {id:'d18',type:'decoy',name:'Decoy: Dead End 2',subtype:'loop',trollMsg:'404: CLUE NOT FOUND.',trollSub:'Clue last seen: vending machine on floor 4. Before that: the photocopier graveyard. Before that: somewhere in HR where no one wanted to go. It is not in any of those places. Back to the hunt.',gifUrl:''},
   {id:'d19',type:'decoy',name:'Decoy: Dead End 3',subtype:'phish',trollMsg:'NICE DETECTIVE WORK.',trollSub:'You found absolutely nothing useful. The AI is proud of your curiosity and disappointed in your results. Back to the hunt, detective.',gifUrl:''},
-  {id:'d20',type:'decoy',name:'Decoy: Dead End 4',subtype:'loop',trollMsg:'HALLUCINATION DETECTED.',trollSub:'This clue was an AI hallucination. It seemed real but contained no useful information — much like this sentence. Go find a real one.',gifUrl:''}
+  {id:'d20',type:'decoy',name:'Decoy: Dead End 4',subtype:'loop',trollMsg:'HALLUCINATION DETECTED.',trollSub:'The AI briefly believed the next clue was hidden inside the ceiling tiles above the bathroom on floor 2. This was a hallucination. Do not check the ceiling tiles. Find a real clue.',gifUrl:''}
 ];
 
 var DEFAULT_GIFS = [
@@ -597,9 +597,9 @@ function renderWinnerPage(el, c) {
       '</div>' +
       '<div class="finish-steps instructions-card">' +
         '<div class="inst-title">What happens now</div>' +
-        '<div class="inst-step"><div class="inst-num">1</div><div class="inst-text">Show this screen to the hunt organizer</div></div>' +
-        '<div class="inst-step"><div class="inst-num">2</div><div class="inst-text">Take a photo with the Unibot for the record books</div></div>' +
-        '<div class="inst-step"><div class="inst-num">3</div><div class="inst-text">Collect your prize and accept your glory</div></div>' +
+        '<div class="inst-step"><div class="inst-num">1</div><div class="inst-text">Show this screen to the hunt organizer to claim your prize</div></div>' +
+        '<div class="inst-step"><div class="inst-num">2</div><div class="inst-text"><strong style=\"color:var(--accent2)\">Take a photo with the Unibot</strong> and send it to the HR team as proof of your victory</div></div>' +
+        '<div class="inst-step"><div class="inst-num">3</div><div class="inst-text">Collect your prize and accept your glory — you earned it</div></div>' +
       '</div>' +
     '</div>';
 }
@@ -629,13 +629,15 @@ function renderDecoy(el, c) {
     el.innerHTML =
       '<div class="decoy-page">' + captionHtml +
         '<div class="phish-card" id="phish-form">' +
-          '<div class="phish-logo">🔒 CorpPortal</div>' +
-          '<div class="phish-tagline">Please verify your identity to continue</div>' +
+          '<div class="phish-logo"><span style=\"color:#00a4ef;font-size:18px\">⊞</span> Microsoft</div>' +
+          '<div class="phish-tagline">Create your account to access this resource</div>' +
           '<label class="phish-label">Email Address</label>' +
           '<input class="phish-input" type="email" placeholder="you@company.com">' +
-          '<label class="phish-label">Password</label>' +
-          '<input class="phish-input" type="password" placeholder="Enter your password">' +
-          '<button class="phish-btn" id="phish-submit-btn">Sign In →</button>' +
+          '<label class="phish-label">Create a Password</label>' +
+          '<input class="phish-input" type="password" placeholder="Create a password">' +
+          '<label class="phish-label">Confirm Password</label>' +
+          '<input class="phish-input" type="password" placeholder="Confirm your password">' +
+          '<button class="phish-btn" id="phish-submit-btn" style=\"background:#00a4ef\">Create Account →</button>' +
         '</div>' +
         '<div id="phish-reveal" style="display:none">' +
           gifHtml +
