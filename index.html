@@ -267,7 +267,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <div class="divider"></div>
       <div class="sidebar-title">Deployed URL</div>
       <div style="font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:10px">QR codes append <code style="color:var(--accent2)">?id=ID</code> to this URL.</div>
-      <input class="field-input" id="base-url-input" type="text" placeholder="https://steelejamesp.github.io/OMPrompt-and-Seek" value="https://steelejamesp.github.io/OMPrompt-and-Seek" oninput="renderEditor()">
+      <input class="field-input" id="base-url-input" type="text" placeholder="https://steelejamesp.github.io/OMPrompt-and-Seek/" value="https://steelejamesp.github.io/OMPrompt-and-Seek/" oninput="renderEditor()">
       <div style="margin-top:12px">
         <button class="btn btn-secondary" style="width:100%;font-size:10px" onclick="adminLogout()">🔒 Lock Admin</button>
         <button class="btn btn-primary" style="width:100%;font-size:10px;margin-top:6px;background:var(--accent2);color:#0a0a0f" onclick="exportHTML()">⬇ Download Updated Site</button>
@@ -465,8 +465,10 @@ function getRealClues() { return clues.filter(function(c){return c.type==='real'
 function getBaseUrl() {
   var el = document.getElementById('base-url-input');
   var v = el ? el.value.trim() : '';
-  if(!v) v = window.location.origin + window.location.pathname.replace(/\/$/,'');
-  return v.replace(/\/$/,'');
+  if(!v) v = window.location.origin + window.location.pathname;
+  // Ensure trailing slash so GitHub Pages does not swallow the ?id= param on redirect
+  if(v.slice(-1) !== '/') v = v + '/';
+  return v;
 }
 
 function attemptAdmin() {
