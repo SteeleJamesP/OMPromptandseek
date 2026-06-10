@@ -874,50 +874,119 @@ function escHtml(s) {
 
 // EXPORT — bakes current clue data into a fresh index.html download
 function exportHTML() {
-  // Grab the full page source
-  var src = document.documentElement.outerHTML;
+  // Get the raw script source (not outerHTML which HTML-encodes apostrophes)
+  var scriptEl = document.querySelector('script');
+  var scriptSrc = scriptEl ? scriptEl.textContent : '';
+  if(!scriptSrc) { showToast('Export failed — could not read script'); return; }
 
-  // Serialise each live array to indented JSON-ish JS
+  // Serialise a live array back to valid JS
   function serialiseArray(arr) {
-    return JSON.stringify(arr, null, 2)
-      // JSON uses double quotes everywhere; convert outer key quotes to unquoted where safe
-      .replace(/"([a-zA-Z_][a-zA-Z0-9_]*)"\s*:/g, '$1:')
-      // Wrap in var declaration brackets — we'll splice it in below
-      ;
+    // JSON.stringify then fix keys to unquoted and ensure single-quote style strings
+    var json = JSON.stringify(arr, null, 2);
+    // Convert "key": to key:
+    json = json.replace(/"([a-zA-Z_][a-zA-Z0-9_]*)"\s*:/g, '$1:');
+    // Convert double-quoted string values to single-quoted, handling inner apostrophes
+    json = json.replace(/"((?:[^"\\]|\\.)*)"/g, function(m, inner) {
+      // Unescape JSON escapes, then re-escape for single-quoted JS string
+      var val = inner
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t')
+        .replace(/\\r/g, '\r')
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\');
+      // Escape backslashes and single quotes for single-quoted string
+      val = val.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      // Re-escape newlines
+      val = val.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+      return "'" + val + "'";
+    });
+    return json;
   }
 
-  function replaceArray(source, varName, newData) {
-    // Match:  var VARNAME = [ ... ];
-    // The array may span many lines, so we match lazily up to the closing ];\n
-    var pattern = new RegExp(
-      '(var ' + varName + ' = \\[)[\\s\\S]*?(\\];)',
-      ''
-    );
+  function replaceArrayInScript(src, varName, newData) {
+    // Find "var VARNAME = [" and replace until matching closing ];
+
+    var startMarker = 'var ' + varName + ' = [';
+    var startIdx = src.indexOf(startMarker);
+    if(startIdx === -1) { console.warn('Could not find', varName); return src; }
+    // Walk forward to find the matching closing ];
+    var depth = 0;
+    var inStr = false;
+    var strChar = '';
+    var i = startIdx + startMarker.length - 1; // position of the [
+    var endIdx = -1;
+    while(i < src.length) {
+      var ch = src[i];
+      if(inStr) {
+        if(ch === '\\') { i += 2; continue; }
+        if(ch === strChar) inStr = false;
+      } else {
+        if(ch === '"' || ch === "'") { inStr = true; strChar = ch; }
+        else if(ch === '[' || ch === '{') depth++;
+        else if(ch === ']' || ch === '}') {
+          depth--;
+          if(depth === 0) {
+            // should be followed by ;
+            endIdx = i + 1; // past the ]
+            if(src[endIdx] === ';') endIdx++; // past the ;
+            break;
+          }
+        }
+      }
+      i++;
+    }
+    if(endIdx === -1) { console.warn('Could not find end of', varName); return src; }
     var serialised = serialiseArray(newData);
-    // serialised is just the [...] part — strip outer [] and re-wrap
-    return source.replace(pattern, 'var ' + varName + ' = ' + serialised + ';');
+    return src.slice(0, startIdx) + 'var ' + varName + ' = ' + serialised + ';' + src.slice(endIdx);
   }
 
-  // Separate clues back into their typed arrays
   var realClues   = clues.filter(function(c){ return c.type === 'real';   });
   var secretClues = clues.filter(function(c){ return c.type === 'secret'; });
   var winnerClues = clues.filter(function(c){ return c.type === 'winner'; });
   var decoyClues  = clues.filter(function(c){ return c.type === 'decoy';  });
   var gifClues    = clues.filter(function(c){ return c.type === 'gif';    });
 
-  src = replaceArray(src, 'DEFAULT_REAL',   realClues);
-  src = replaceArray(src, 'DEFAULT_SECRET', secretClues);
-  src = replaceArray(src, 'DEFAULT_WINNER', winnerClues);
-  src = replaceArray(src, 'DEFAULT_DECOYS', decoyClues);
-  src = replaceArray(src, 'DEFAULT_GIFS',   gifClues);
+  scriptSrc = replaceArrayInScript(scriptSrc, 'DEFAULT_REAL',   realClues);
+  scriptSrc = replaceArrayInScript(scriptSrc, 'DEFAULT_SECRET', secretClues);
+  scriptSrc = replaceArrayInScript(scriptSrc, 'DEFAULT_WINNER', winnerClues);
+  scriptSrc = replaceArrayInScript(scriptSrc, 'DEFAULT_DECOYS', decoyClues);
+  scriptSrc = replaceArrayInScript(scriptSrc, 'DEFAULT_GIFS',   gifClues);
 
-  // Also clear the localStorage key so the fresh file starts clean
-  src = src.replace(
+  // Clear localStorage bootstrap so exported file starts clean from defaults
+  scriptSrc = scriptSrc.replace(
     "localStorage.getItem('ps_v4')",
-    "null /* exported — defaults are baked in */"
+    "null /* exported — defaults baked in */"
   );
 
-  var blob = new Blob([src], { type: 'text/html;charset=utf-8' });
+  // Rebuild the full HTML with the updated script
+  var fullHtml = document.documentElement.outerHTML;
+  // Replace the script content — find opening <script> tag and swap its content
+  var scriptOpen = fullHtml.indexOf('<script>');
+  var scriptClose = fullHtml.indexOf('</' + 'script>', scriptOpen);
+  if(scriptOpen === -1 || scriptClose === -1) {
+    // Try without escaped slash
+    scriptClose = fullHtml.indexOf('</' + 'script>', scriptOpen);
+  }
+  if(scriptOpen === -1 || scriptClose === -1) {
+    showToast('Export failed — could not locate script block');
+    return;
+  }
+  var output = fullHtml.slice(0, scriptOpen + '<script>'.length) +
+               '\n' + scriptSrc + '\n' +
+               fullHtml.slice(scriptClose);
+
+  // Fix any HTML entity encoding that outerHTML introduced in the script block
+  // (browsers sometimes encode & in script content)
+  output = output.replace(/<script>([\s\S]*?)<\/script>/g, function(m, body) {
+    return '<script>' + body
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      + '</' + 'script>';
+  });
+
+  var blob = new Blob(['<!DOCTYPE html>\n' + output], { type: 'text/html;charset=utf-8' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'index.html';
@@ -927,7 +996,6 @@ function exportHTML() {
   setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
   showToast('Downloaded index.html — push to GitHub to deploy!');
 }
-
 renderHuntView();
 </script>
 </body>
