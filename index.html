@@ -428,7 +428,8 @@ var DEFAULT_GIFS = [
 
 var clues = [];
 try {
-  var saved = localStorage.getItem('ps_v4');
+  localStorage.removeItem('ps_v3'); localStorage.removeItem('ps_v4');
+  var saved = localStorage.getItem('ps_v5');
   if(saved) {
     var parsed = JSON.parse(saved);
     var defaultIds = {};
@@ -459,7 +460,7 @@ var selectedId = null;
 var activeQRId = null;
 var activeRedirectInterval = null;
 
-function save() { try { localStorage.setItem('ps_v4', JSON.stringify(clues)); } catch(e) {} }
+function save() { try { localStorage.setItem('ps_v5', JSON.stringify(clues)); } catch(e) {} }
 function getById(id) { for(var i=0;i<clues.length;i++) if(clues[i].id===id) return clues[i]; return null; }
 function getRealClues() { return clues.filter(function(c){return c.type==='real';}); }
 function getBaseUrl() {
@@ -954,7 +955,7 @@ function exportHTML() {
 
   // Clear localStorage bootstrap so exported file starts clean from defaults
   scriptSrc = scriptSrc.replace(
-    "localStorage.getItem('ps_v4')",
+    "localStorage.getItem('ps_v5')",
     "null /* exported — defaults baked in */"
   );
 
